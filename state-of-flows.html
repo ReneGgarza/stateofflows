@@ -4,6 +4,9 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>State of Flows (SoFs) — Bóveda de Auditoría Visual</title>
+  <meta name="description" content="Bóveda interactiva de State of Flows: importa un workflow de n8n y recorre cada nodo con un motor de reglas deterministas. Corre en tu navegador." />
+  <meta name="theme-color" content="#06080c" />
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Crect width='24' height='24' rx='6' fill='%2306080c'/%3E%3Ccircle cx='12' cy='12' r='3' fill='%2322d3ee'/%3E%3Ccircle cx='12' cy='12' r='8' fill='none' stroke='%2322d3ee' stroke-width='1.5' stroke-dasharray='3 3'/%3E%3C/svg%3E" />
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -126,8 +129,9 @@
         <div class="flex items-center gap-2">
           <span class="font-semibold text-sm sm:text-base tracking-tight text-white">State of Flows</span>
           <span class="font-mono text-[10px] px-1.5 py-0.5 rounded bg-cyan-500/15 text-cyan-300 border border-cyan-500/30">SoFs v1.0</span>
+          <a href="index.html" class="hidden sm:inline text-[11px] text-slate-400 hover:text-white underline underline-offset-2">← Sitio</a>
         </div>
-        <p class="text-[11px] text-slate-400 hidden md:block truncate">Flow: <span id="headerFlowName" class="font-mono text-slate-300">prod_onboarding_billing_pipeline</span></p>
+        <p class="text-[11px] text-slate-400 hidden md:block truncate">Flow: <span id="headerFlowName" class="font-mono text-slate-300">prod_onboarding_billing_pipeline (flujo de ejemplo)</span></p>
       </div>
     </div>
 
@@ -145,6 +149,7 @@
           <option value="resilience" class="bg-obsidian-900">Preset: Resiliencia & Errores</option>
           <option value="security" class="bg-obsidian-900">Preset: Seguridad & PII</option>
           <option value="performance" class="bg-obsidian-900">Preset: Rendimiento & Costo API</option>
+          <option value="handoff" class="bg-obsidian-900">Preset: Pre-Flight & Entrega</option>
         </select>
       </div>
 
@@ -192,7 +197,7 @@
         <div>
           <div class="flex items-center gap-2">
             <span class="text-[10px] font-mono uppercase tracking-wider px-2 py-0.5 rounded bg-cyan-500/15 text-cyan-300 border border-cyan-500/30">Parser Nativo v1.0</span>
-            <span class="text-[11px] font-mono text-slate-400">n8n · Make · JSON</span>
+            <span class="text-[11px] font-mono text-slate-400">n8n (completo) · Make (básico)</span>
           </div>
           <h3 class="text-base sm:text-lg font-bold text-white mt-1">Importar Blueprint a la Bóveda SoFs</h3>
         </div>
@@ -214,11 +219,13 @@
 
       <textarea id="blueprintTextarea" rows="8" class="w-full rounded-xl bg-obsidian-950 border border-slate-800 p-3 font-mono text-xs text-slate-300 focus:outline-none focus:border-cyan-500 select-text" placeholder='Pega aquí el JSON exportado de tu workflow de n8n o scenario blueprint de Make...'></textarea>
 
+      <p class="text-[11px] text-slate-400">Todo se procesa en tu navegador. El análisis completo (14 reglas) es para n8n; el de Make es básico.</p>
+
       <div id="importErrorBanner" class="hidden rounded-lg bg-rose-500/10 border border-rose-500/30 px-3 py-2 text-xs font-mono text-rose-300"></div>
 
       <div class="flex flex-wrap items-center justify-between gap-2 pt-1">
         <div class="flex items-center gap-2">
-          <span class="text-[11px] font-mono text-slate-500">Probar muestra:</span>
+          <span class="text-[11px] font-mono text-slate-400">Probar muestra:</span>
           <button id="loadSampleN8nBtn" class="px-2.5 py-1.5 rounded-lg bg-obsidian-850 hover:bg-obsidian-800 border border-slate-700 text-[11px] font-mono text-cyan-300 cursor-pointer transition">
             Ejemplo n8n
           </button>
@@ -249,6 +256,8 @@
       <p class="text-xs text-slate-300 leading-relaxed">
         SoFs combina <strong class="text-cyan-300">reglas estáticas deterministas</strong> (latencia cero, 100% privado) con un <strong class="text-purple-300">generador de parches JSON</strong> adaptado al esquema de n8n o Make. Opcionalmente, conecta tu API Key (OpenAI / OpenRouter) para enriquecer los parches con razonamiento LLM en vivo desde tu navegador.
       </p>
+
+      <p class="text-[11px] text-amber-300 leading-relaxed">Privacidad: con el motor integrado nada sale de tu navegador. Si eliges OpenAI u OpenRouter, el JSON del nodo seleccionado (con secretos enmascarados) se envía a ese proveedor para generar el parche.</p>
 
       <div class="space-y-3 bg-obsidian-950 border border-slate-800 rounded-xl p-3.5">
         <div>
@@ -521,6 +530,210 @@
      * ============================================================================
      */
 
+/* ===== SoFs Engine v1 · análisis estático determinista de workflows n8n (corre 100% en el navegador) ===== */
+const SoFsEngine = (() => {
+  const PTS = { critical: 18, warning: 6, info: 2 };
+  const ORDER = { critical: 0, warning: 1, info: 2 };
+  const CAP_PER_RULE = 3; // máximo de hallazgos por regla que restan puntaje (evita que una regla repetida hunda todo)
+  const SECRET_RX = /(sk-[A-Za-z0-9_-]{20,}|sk_live_[A-Za-z0-9]{10,}|rk_live_[A-Za-z0-9]{10,}|xox[abp]-[A-Za-z0-9-]{10,}|gh[pousr]_[A-Za-z0-9]{30,}|AIza[0-9A-Za-z_-]{30,}|AKIA[0-9A-Z]{16})/;
+  const QUERY_SECRET_RX = /[?&](api[_-]?key|apikey|access[_-]?token|token|secret|password|auth|key)=([^&#\s]+)/i;
+  const PAY_RX = /(stripe\.com|paypal\.com|mercadopago|openpay|conekta|adyen|braintreegateway|squareup|paddle\.com|lemonsqueezy|razorpay|checkout\.com)/i;
+  const PII_HINT_RX = /(e-?mail|correo|phone|tel[eé]fono|celular|curp|\brfc\b|\bssn\b|address|direcci[oó]n|nombre completo|full ?name|tarjeta|credit ?card)/i;
+  const WHOLE_OBJ_RX = /\{\{\s*(\$json|\$input\.item\.json|\$input\.first\(\)\.json)\s*\}\}|JSON\.stringify\(\s*\$json\s*\)/;
+  const SANITIZER_RX = /(redact|sanitiz|sanitis|mask|anonym|anonim|presidio|scrub|tokeniz|\bpii\b)/i;
+  const DEFAULT_NAME_RX = /^(HTTP Request|Code|Set|Edit Fields|If|IF|Switch|Merge|Webhook|Function|Slack|Gmail|OpenAI|Stripe|Postgres|Google Sheets|Wait)\s?\d*$/;
+
+  const lastSeg = t => String(t || '').split('.').pop();
+  const isExpr = v => typeof v === 'string' && (v.startsWith('=') || v.includes('{{'));
+  const escapeHtml = s => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+  const mask = s => String(s).slice(0, 4) + '…';
+
+  function walk(o, fn, key = '') {
+    if (o == null) return;
+    if (typeof o === 'string') { fn(key, o); return; }
+    if (Array.isArray(o)) { o.forEach(v => walk(v, fn, key)); return; }
+    if (typeof o === 'object') Object.entries(o).forEach(([k, v]) => walk(v, fn, k));
+  }
+
+  function parse(raw) {
+    let data;
+    try { data = JSON.parse(raw); } catch (e) { throw new Error('Eso no es un JSON válido. Revisa llaves, comas y comillas (copia el workflow completo desde n8n: Ctrl/Cmd+A, Ctrl/Cmd+C).'); }
+    if (!data || typeof data !== 'object' || Array.isArray(data)) throw new Error('El JSON debe ser un objeto de workflow, no una lista ni un valor suelto.');
+    return data;
+  }
+  function detect(data) {
+    if (Array.isArray(data.nodes)) return 'n8n';
+    if (Array.isArray(data.flow)) return 'make';
+    return null;
+  }
+
+  function analyze(data) {
+    const findings = [];
+    const add = (id, preset, severity, node, title, detail, fix) =>
+      findings.push({ id, preset, severity, node: node ? node.name : null, title, detail, fix, thought: `${node ? node.name : 'Workflow'} → ${title}` });
+
+    const all = (data.nodes || []).filter(n => n && typeof n === 'object');
+    const nodes = all.filter(n => !/stickyNote/i.test(n.type || ''));
+    const stickies = all.length - nodes.length;
+    const T = n => lastSeg(n.type);
+    const P = n => n.parameters || {};
+    const isWebhook = n => /^webhook$/i.test(T(n));
+    const isHttp = n => /^httpRequest$/i.test(T(n));
+    const isLlm = n => (/langchain/i.test(n.type || '') && /^(agent|chainLlm|openAi|chainSummarization|chainRetrievalQa|informationExtractor|sentimentAnalysis|textClassifier|anthropic|googleGemini|mistralAi)$/i.test(T(n))) || /^(openAi|anthropic|googleGemini|mistralAi|perplexity|deepSeek)$/i.test(T(n));
+    const isNotify = n => /^(slack|gmail|emailSend|telegram|discord|whatsApp|twilio|sendGrid|microsoftTeams|mattermost)$/i.test(T(n));
+    const isPayNode = n => /^(stripe|payPal|mercadoPago)$/i.test(T(n));
+    const hasErrPath = n => !!n.retryOnFail || !!n.continueOnFail || /^continue/i.test(n.onError || '');
+
+    const hasPayment = nodes.some(n => isPayNode(n) || (isHttp(n) && PAY_RX.test(String(P(n).url || ''))));
+    const hasLlm = nodes.some(isLlm);
+    const sanitizer = nodes.some(n => SANITIZER_RX.test(`${n.name || ''} ${n.type || ''}`));
+
+    nodes.forEach(n => {
+      const p = P(n); const pStr = JSON.stringify(p);
+
+      // SEC-WEBHOOK-AUTH
+      if (isWebhook(n) && (!p.authentication || p.authentication === 'none')) {
+        const sens = hasPayment || hasLlm;
+        add('SEC-WEBHOOK-AUTH', 'security', sens ? 'critical' : 'warning', n, 'Webhook público sin autenticación',
+          'Cualquiera que conozca la URL puede disparar este flujo' + (sens ? ', y este flujo ejecuta cobros o llamadas a IA.' : '.'),
+          'Activa autenticación en el nodo Webhook (Header Auth o JWT) o valida una firma HMAC en el primer nodo.');
+      }
+
+      // SEC-SECRET (secretos literales, tokens en URL, cabeceras con token fijo)
+      let secretMsg = null, secretSev = 'critical';
+      walk(p, (k, v) => {
+        if (secretMsg) return;
+        const m = !isExpr(v) && v.match(SECRET_RX);
+        if (m) { secretMsg = `Hay un valor con forma de clave (${mask(m[0])}) escrito directamente en el flujo.`; return; }
+        const q = v.match(QUERY_SECRET_RX);
+        if (q) {
+          const dyn = /^(\{\{|\$|%7B)/.test(q[2]);
+          secretMsg = dyn ? `La URL envía "${q[1]}" como parámetro de consulta; queda en logs y proxies.` : `La URL lleva "${q[1]}" con un valor fijo en el parámetro de consulta.`;
+          secretSev = dyn ? 'warning' : 'critical';
+        }
+      });
+      const hdrs = (p.headerParameters && p.headerParameters.parameters) || [];
+      hdrs.forEach(h => {
+        if (!secretMsg && h && /^(authorization|x-api-key|api-key|x-auth-token)$/i.test(h.name || '') && typeof h.value === 'string' && !isExpr(h.value) && h.value.length > 8) {
+          secretMsg = `La cabecera ${h.name} tiene un valor fijo escrito en el flujo.`; secretSev = 'critical';
+        }
+      });
+      if (secretMsg) add('SEC-SECRET', 'security', secretSev, n, 'Credencial expuesta en la configuración', secretMsg,
+        'Mueve el secreto a una credencial de n8n (o variable de entorno) y envíalo por cabecera, no por URL. Si ya compartiste este JSON, rota la clave.');
+
+      // SEC-PII-LLM
+      if (isLlm(n) && !sanitizer && (PII_HINT_RX.test(pStr) || WHOLE_OBJ_RX.test(pStr)))
+        add('SEC-PII-LLM', 'security', 'warning', n, 'Posibles datos personales enviados a un LLM externo',
+          'El prompt incluye campos que parecen datos personales (o el objeto completo) y no se detectó un paso de redacción antes. Es una heurística: revisa el contenido real.',
+          'Añade un paso que enmascare correo, teléfono, CURP/RFC antes del LLM, o envía solo los campos necesarios.');
+
+      // SEC-LOG-PAYLOAD
+      if (isNotify(n) && WHOLE_OBJ_RX.test(pStr))
+        add('SEC-LOG-PAYLOAD', 'security', 'warning', n, 'El mensaje vuelca el payload completo',
+          'Este nodo envía el objeto completo ({{ $json }}), que puede incluir datos personales o secretos, a un canal de mensajería.',
+          'Envía solo los campos necesarios (ID, estado, resumen) en lugar del objeto completo.');
+
+      // RES-IDEMPOTENCY
+      const method = String(p.method || 'GET').toUpperCase();
+      if (isHttp(n) && /^(POST|PUT|PATCH|DELETE)$/.test(method) && PAY_RX.test(String(p.url || '')) && !/idempotency/i.test(pStr))
+        add('RES-IDEMPOTENCY', 'resilience', 'critical', n, 'Cobro sin llave de idempotencia',
+          'Un reintento por timeout puede duplicar el cobro o la suscripción' + (n.retryOnFail ? ' (y este nodo tiene reintentos activos).' : '.'),
+          'Añade la cabecera Idempotency-Key con un valor estable, por ejemplo el ID del evento: {{ $json.id }}.');
+      if (isPayNode(n) && (!p.operation || /create|charge|refund|capture|update/i.test(String(p.operation))))
+        add('RES-IDEMPOTENCY', 'resilience', 'warning', n, 'Cobro o alta sin protección visible contra duplicados',
+          'El nodo nativo no muestra una llave de idempotencia. Si el flujo se reejecuta, podría repetir la operación.',
+          'Verifica que exista una deduplicación previa (guardar el event_id y salir si ya se procesó) o usa HTTP Request con Idempotency-Key.');
+
+      // RES-RETRY / RES-LLM-FALLBACK
+      if (isHttp(n) && !hasErrPath(n))
+        add('RES-RETRY', 'resilience', 'warning', n, 'Llamada externa sin reintentos',
+          'Un error 429/502 o un corte de red detiene el flujo en este punto.',
+          'Activa "Retry On Fail" en Settings del nodo (3 intentos, 2000 ms) o enruta el error a una rama de recuperación.');
+      if (isLlm(n) && !hasErrPath(n))
+        add('RES-LLM-FALLBACK', 'resilience', 'warning', n, 'Llamada a IA sin reintento ni ruta alterna',
+          'Si el proveedor responde con límite de cuota o error, el flujo se detiene sin respaldo.',
+          'Activa reintentos con espera y define una rama alterna (respuesta por defecto o cola de revisión).');
+
+      // HND-TIMEOUT
+      if (isHttp(n) && !(p.options && p.options.timeout))
+        add('HND-TIMEOUT', 'handoff', 'info', n, 'Sin timeout explícito', 'No se definió un tiempo máximo de espera para esta llamada.',
+          'En Options del nodo agrega Timeout (por ejemplo 10000 ms) para evitar ejecuciones colgadas.');
+
+      // PERF-LLM-TIER
+      if (isLlm(n)) {
+        const m = pStr.match(/(gpt-4[\w.\-]*|o1[\w\-]*|o3[\w\-]*|claude-[\w.\-]*opus[\w.\-]*)/i);
+        if (m && !/mini|nano|haiku|flash/i.test(m[0]))
+          add('PERF-LLM-TIER', 'performance', 'info', n, 'Modelo de gama alta configurado', `Este nodo usa ${m[0]}. Para clasificaciones o extracciones simples suele bastar un modelo más pequeño.`,
+            'Prueba un modelo menor en este paso y compara calidad y costo.');
+      }
+
+      // HND-DISABLED
+      if (n.disabled) add('HND-DISABLED', 'handoff', 'info', n, 'Nodo deshabilitado', 'El nodo está apagado pero sigue en el flujo.', 'Elimínalo o documenta por qué se queda antes de entregar.');
+    });
+
+    // RES-ERRORFLOW
+    const hasErrTrigger = nodes.some(n => /errorTrigger/i.test(n.type || ''));
+    if (!(data.settings && data.settings.errorWorkflow) && !hasErrTrigger)
+      add('RES-ERRORFLOW', 'resilience', 'warning', null, 'Sin workflow de error configurado', 'Si algo falla en producción, nadie recibe un aviso.',
+        'Crea un workflow con Error Trigger (aviso a Slack o correo) y selecciónalo en Settings → Error Workflow.');
+
+    // HND-ORPHAN
+    if (nodes.length > 1) {
+      const linked = new Set();
+      Object.entries(data.connections || {}).forEach(([src, outs]) => {
+        Object.values(outs || {}).forEach(branches => (branches || []).forEach(br => (br || []).forEach(c => { if (c && c.node) { linked.add(src); linked.add(c.node); } })));
+      });
+      nodes.forEach(n => { if (!linked.has(n.name) && !n.disabled) add('HND-ORPHAN', 'handoff', 'info', n, 'Nodo sin conexiones', 'No tiene entradas ni salidas: puede ser un resto de pruebas.', 'Conéctalo o elimínalo antes de entregar.'); });
+    }
+
+    // HND-NAMES / HND-DOCS (a nivel de workflow)
+    const defaults = nodes.filter(n => DEFAULT_NAME_RX.test(String(n.name || '').trim()));
+    if (defaults.length >= 3) add('HND-NAMES', 'handoff', 'info', null, 'Nombres de nodo por defecto', `${defaults.length} nodos conservan su nombre original (por ejemplo "${defaults[0].name}"), lo que dificulta entender el flujo.`, 'Renombra cada nodo con lo que hace ("Cobrar suscripción", "Clasificar lead").');
+    if (!stickies && nodes.length >= 5) add('HND-DOCS', 'handoff', 'info', null, 'Sin notas de documentación', 'El flujo no tiene Sticky Notes que expliquen su propósito.', 'Añade una nota con propósito, entradas, salidas y responsable.');
+
+    // Puntaje con tope por regla
+    const seen = {}; let deduction = 0;
+    findings.slice().sort((a, b) => ORDER[a.severity] - ORDER[b.severity]).forEach(f => {
+      seen[f.id] = (seen[f.id] || 0) + 1;
+      if (seen[f.id] <= CAP_PER_RULE) deduction += PTS[f.severity];
+    });
+    const score = Math.max(0, 100 - deduction);
+    const counts = { critical: 0, warning: 0, info: 0 };
+    findings.forEach(f => counts[f.severity]++);
+    const verdict = score >= 85 ? 'Listo para entregar' : score >= 60 ? 'Requiere ajustes' : 'Riesgo alto';
+    findings.sort((a, b) => ORDER[a.severity] - ORDER[b.severity]);
+    return { engine: 'n8n', name: data.name || 'workflow sin nombre', nodeCount: nodes.length, findings, counts, score, verdict };
+  }
+
+  function redact(obj) {
+    const SENS_KEY = /^(password|secret|apikey|api_key|token|accesstoken|authorization|clientsecret)$/i;
+    const rec = (v, key = '') => {
+      if (v == null) return v;
+      if (typeof v === 'string') return (SENS_KEY.test(key) || (!isExpr(v) && SECRET_RX.test(v))) ? '[REDACTED]' : v;
+      if (Array.isArray(v)) {
+        if (v.length && v.every(x => x && typeof x === 'object' && 'name' in x && 'value' in x))
+          return v.map(x => ({ ...x, value: /^(authorization|x-api-key|api-key|x-auth-token)$/i.test(x.name) && !isExpr(x.value) ? '[REDACTED]' : rec(x.value, 'value') }));
+        return v.map(x => rec(x, key));
+      }
+      if (typeof v === 'object') return Object.fromEntries(Object.entries(v).map(([k, x]) => [k, rec(x, k)]));
+      return v;
+    };
+    return rec(obj);
+  }
+
+  function summary(res, url) {
+    const L = [`# State of Flows — ${res.name}`, `**Puntaje:** ${res.score}/100 (${res.verdict}) · ${res.nodeCount} nodos · ${res.counts.critical} críticos, ${res.counts.warning} advertencias, ${res.counts.info} notas`, ''];
+    res.findings.forEach(f => L.push(`- [${f.severity.toUpperCase()}] ${f.node ? f.node + ': ' : ''}${f.title}. FIX: ${f.fix}`));
+    if (url) L.push('', `Auditado con State of Flows · ${url}`);
+    return L.join('\n');
+  }
+
+  return { parse, detect, analyze, redact, summary, escapeHtml, SECRET_RX };
+})();
+if (typeof module !== 'undefined') module.exports = SoFsEngine;
+
+    const esc = SoFsEngine.escapeHtml;
+
     let activeFlowName = 'prod_onboarding_billing_pipeline';
     let activeEngineBadge = 'DEMO';
 
@@ -597,6 +810,18 @@
           n9: { status: 'ok', thought: 'Midiendo disparo de webhook Slack → Ejecución asíncrona fire-and-forget.', detail: 'No bloquea el cierre del flujo.', fix: 'Ninguna acción requerida.' }
         }
       }
+    };
+
+    AUDIT_PRESETS.handoff = {
+      label: 'Pre-Flight & Entrega',
+      summary: 'Revisa lo que un cliente notaría al recibir el flujo: nodos sueltos o apagados, nombres por defecto, notas de documentación y timeouts.',
+      findings: (() => {
+        const f = {};
+        FLOW_NODES.forEach(n => { f[n.id] = { status: 'ok', thought: `Revisando ${n.name} → listo para entregar.`, detail: 'Sin hallazgos de entrega en este nodo del flujo de ejemplo.', fix: 'Ninguna acción requerida.' }; });
+        f.n5 = { status: 'warning', ruleId: 'HND-DOCS', thought: 'Router Condicional → el umbral de decisión no está documentado.', detail: 'La regla "score >= 0.85" define quién es VIP, pero no hay una nota que explique de dónde sale ese valor.', fix: 'Añade una nota junto al router con el origen del umbral y quién puede cambiarlo.' };
+        f.n7 = { status: 'warning', ruleId: 'HND-DOCS', thought: 'Cola Fallback / Retry → falta un responsable documentado.', detail: 'La cola de reintentos existe, pero el flujo no indica quién revisa los mensajes que fallan.', fix: 'Documenta el responsable y el procedimiento para vaciar la cola.' };
+        return f;
+      })()
     };
 
     // ============================================================================
@@ -695,8 +920,8 @@
       els.sectionsLayer.innerHTML = VAULT_SECTIONS.map(sec => `
         <div class="absolute rounded-2xl border border-slate-800/70 bg-slate-900/20"
              style="left:${sec.x}px; top:${sec.y}px; width:${sec.w}px; height:${sec.h}px;">
-          <div class="px-3.5 py-2 text-[10px] font-mono tracking-widest text-slate-500 border-b border-slate-800/50">
-            ${sec.title}
+          <div class="px-3.5 py-2 text-[10px] font-mono tracking-widest text-slate-400 border-b border-slate-800/50">
+            ${esc(sec.title)}
           </div>
         </div>
       `).join('');
@@ -729,11 +954,11 @@
              style="left: ${node.x - 102}px; top: ${node.y - 42}px; width: 204px;"
              class="vault-node absolute rounded-xl bg-obsidian-850/95 border border-slate-700/80 p-3 shadow-xl transition-all duration-300 cursor-pointer hover:border-slate-500">
           <div class="flex items-center justify-between gap-1.5 mb-1">
-            <span class="font-mono text-[10px] px-1.5 py-0.5 rounded bg-slate-800 text-slate-400 border border-slate-700/70">${node.code}</span>
-            <span id="node-badge-${node.id}" class="font-mono text-[9px] px-1.5 py-0.5 rounded bg-slate-800/80 text-slate-500">EN ESPERA</span>
+            <span class="font-mono text-[10px] px-1.5 py-0.5 rounded bg-slate-800 text-slate-400 border border-slate-700/70">${esc(node.code)}</span>
+            <span id="node-badge-${node.id}" class="font-mono text-[9px] px-1.5 py-0.5 rounded bg-slate-800/80 text-slate-400">EN ESPERA</span>
           </div>
-          <div class="text-xs font-semibold text-slate-100 truncate">${node.name}</div>
-          <div class="text-[10px] font-mono text-slate-400 truncate mt-0.5">${node.meta}</div>
+          <div class="text-xs font-semibold text-slate-100 truncate">${esc(node.name)}</div>
+          <div class="text-[10px] font-mono text-slate-400 truncate mt-0.5">${esc(node.meta)}</div>
         </div>
       `).join('');
 
@@ -992,11 +1217,18 @@
         }
       };
 
+      templates['SEC-SECRET'] = {
+        name: node.name,
+        type: node.type,
+        parameters: { authentication: 'genericCredentialType', genericAuthType: 'httpHeaderAuth' },
+        sofs_note: 'Crea la credencial en n8n, quita la clave de la URL o de la cabecera y rota la clave si el JSON ya se compartió.'
+      };
+
       return templates[rule] || {
         node: node.name,
         engine,
         sofs_recommendation: finding.fix,
-        patched_options: { retryOnFail: true, timeout: 5000 }
+        sofs_note: 'Esta regla no tiene plantilla automática: aplica la recomendación manualmente.'
       };
     }
 
@@ -1042,7 +1274,7 @@
               temperature: 0.1,
               messages: [
                 { role: 'system', content: 'Eres el motor híbrido de parches de State of Flows (SoFs). Devuelve ÚNICAMENTE un bloque JSON válido con la configuración corregida para el nodo indicado.' },
-                { role: 'user', content: `Motor: ${activeEngineBadge}\nNodo: ${JSON.stringify(node._raw || node)}\nHallazgo: ${finding.detail}\nSolución requerida: ${finding.fix}\nBase sugerida: ${JSON.stringify(basePatch)}` }
+                { role: 'user', content: `Motor: ${activeEngineBadge}\nNodo: ${JSON.stringify(SoFsEngine.redact(node._raw || node))}\nHallazgo: ${finding.detail}\nSolución requerida: ${finding.fix}\nBase sugerida: ${JSON.stringify(basePatch)}` }
               ]
             })
           });
@@ -1088,7 +1320,7 @@
         counts,
         snapshot: {
           sections: VAULT_SECTIONS,
-          nodes: FLOW_NODES,
+          nodes: FLOW_NODES.map(({ _raw, ...rest }) => rest),
           edges: FLOW_EDGES,
           sequence: SCAN_SEQUENCE,
           findings: AUDIT_PRESETS[state.presetKey].findings
@@ -1124,15 +1356,15 @@
         return `
           <div class="rounded-xl bg-obsidian-900 border border-slate-800 hover:border-slate-700 p-3 space-y-1.5 transition">
             <div class="flex items-center justify-between gap-2">
-              <span class="font-mono text-[10px] text-slate-400">${item.timestamp} · <strong class="text-cyan-400">${item.engine}</strong></span>
+              <span class="font-mono text-[10px] text-slate-400">${esc(item.timestamp)} · <strong class="text-cyan-400">${esc(item.engine)}</strong></span>
               <div class="flex items-center gap-1.5">
                 ${deltaHtml}
                 <span class="font-mono text-xs font-bold ${scoreColor}">${item.score}/100</span>
               </div>
             </div>
-            <div class="text-xs font-semibold text-white truncate">${item.flowName}</div>
+            <div class="text-xs font-semibold text-white truncate">${esc(item.flowName)}</div>
             <div class="flex items-center justify-between text-[11px] text-slate-400">
-              <span>${item.presetLabel}</span>
+              <span>${esc(item.presetLabel)}</span>
               <span class="font-mono text-[10px]">OK:${item.counts.ok} W:${item.counts.warn} C:${item.counts.crit}</span>
             </div>
           </div>
@@ -1161,7 +1393,7 @@
         if (!card || !badge) return;
         card.className = 'vault-node absolute rounded-xl bg-obsidian-850/95 border border-slate-700/80 p-3 shadow-xl transition-all duration-300 cursor-pointer hover:border-slate-500';
         card.style.boxShadow = '';
-        badge.className = 'font-mono text-[9px] px-1.5 py-0.5 rounded bg-slate-800/80 text-slate-500';
+        badge.className = 'font-mono text-[9px] px-1.5 py-0.5 rounded bg-slate-800/80 text-slate-400';
         badge.textContent = 'EN ESPERA';
       });
 
@@ -1281,21 +1513,21 @@
       item.innerHTML = `
         <div class="flex items-center justify-between gap-2 mb-1">
           <div class="flex items-center gap-2 min-w-0">
-            <span class="font-mono text-[10px] text-slate-500">#0${stepNum}</span>
-            <span class="font-mono text-[10px] px-1.5 py-0.5 rounded bg-slate-800 text-slate-300">${node.code}</span>
-            <span class="text-xs font-semibold text-white truncate">${node.name}</span>
+            <span class="font-mono text-[10px] text-slate-400">#0${stepNum}</span>
+            <span class="font-mono text-[10px] px-1.5 py-0.5 rounded bg-slate-800 text-slate-300">${esc(node.code)}</span>
+            <span class="text-xs font-semibold text-white truncate">${esc(node.name)}</span>
           </div>
           <span class="font-mono text-[10px] px-1.5 py-0.5 rounded font-semibold ${st.text} shrink-0" style="background:${st.bg}">
             ${st.badge}
           </span>
         </div>
-        <p class="text-[11px] font-mono text-slate-300 leading-relaxed mb-1.5">${finding.thought}</p>
-        <p class="text-[11px] text-slate-400 leading-snug">${finding.detail}</p>
+        <p class="text-[11px] font-mono text-slate-300 leading-relaxed mb-1.5">${esc(finding.thought)}</p>
+        <p class="text-[11px] text-slate-400 leading-snug">${esc(finding.detail)}</p>
         ${finding.status !== 'ok' ? `
           <div class="mt-2 pt-2 border-t border-slate-800/80 space-y-2">
             <div class="text-[11px] text-cyan-300 flex items-start gap-1.5">
               <span class="font-mono font-bold shrink-0">FIX →</span>
-              <span>${finding.fix}</span>
+              <span>${esc(finding.fix)}</span>
             </div>
             <button data-patch-node="${node.id}" class="auto-patch-btn w-full py-1.5 px-2.5 rounded-lg bg-purple-500/15 hover:bg-purple-500/25 border border-purple-500/35 text-[11px] font-mono text-purple-200 flex items-center justify-center gap-1.5 transition cursor-pointer">
               <span>⚡ Generar Parche JSON (Reglas + LLM)</span>
@@ -1419,10 +1651,10 @@
         ${critNodes.map(({ node, f }) => `
           <div class="rounded-xl bg-rose-500/5 border border-rose-500/30 p-3 space-y-2">
             <div class="flex items-center justify-between">
-              <span class="text-xs font-semibold text-white">${node.name}</span>
-              <span class="font-mono text-[10px] text-rose-300">${node.code} · CRÍTICO</span>
+              <span class="text-xs font-semibold text-white">${esc(node.name)}</span>
+              <span class="font-mono text-[10px] text-rose-300">${esc(node.code)} · CRÍTICO</span>
             </div>
-            <p class="text-[11px] text-slate-300">${f.detail}</p>
+            <p class="text-[11px] text-slate-300">${esc(f.detail)}</p>
             <button onclick="openAutoPatchModal('${node.id}')" class="w-full py-1.5 rounded-lg bg-purple-500/15 hover:bg-purple-500/25 border border-purple-500/35 text-[11px] font-mono text-purple-200 cursor-pointer">
               ⚡ Ver Parche JSON Automático
             </button>
@@ -1432,10 +1664,10 @@
         ${warnNodes.map(({ node, f }) => `
           <div class="rounded-xl bg-amber-500/5 border border-amber-500/30 p-3 space-y-2">
             <div class="flex items-center justify-between">
-              <span class="text-xs font-semibold text-white">${node.name}</span>
-              <span class="font-mono text-[10px] text-amber-300">${node.code} · WARN</span>
+              <span class="text-xs font-semibold text-white">${esc(node.name)}</span>
+              <span class="font-mono text-[10px] text-amber-300">${esc(node.code)} · WARN</span>
             </div>
-            <p class="text-[11px] text-slate-300">${f.detail}</p>
+            <p class="text-[11px] text-slate-300">${esc(f.detail)}</p>
             <button onclick="openAutoPatchModal('${node.id}')" class="w-full py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 border border-slate-700 text-[11px] font-mono text-cyan-300 cursor-pointer">
               ⚡ Ver Parche JSON Recomendado
             </button>
@@ -1476,49 +1708,66 @@
     // PARSER NATIVO PARA BLUEPRINTS DE n8n Y MAKE
     // ============================================================================
     function classifyNodeRole(rawType = '', rawName = '') {
-      const str = `${rawType} ${rawName}`.toLowerCase();
-      if (str.includes('webhook') || str.includes('trigger') || str.includes('watch') || str.includes('cron') || str.includes('form')) return { prefix: 'TRG', category: 'Trigger', zone: 0, complexity: 1.0 };
-      if (str.includes('auth') || str.includes('filter') || str.includes('validat') || str.includes('guard')) return { prefix: 'SEC', category: 'Guardrail', zone: 0, complexity: 1.2 };
-      if (str.includes('openai') || str.includes('anthropic') || str.includes('claude') || str.includes('gemini') || str.includes('llm') || str.includes('agent') || str.includes('langchain')) return { prefix: 'AI', category: 'LLM / Agent', zone: 1, complexity: 1.6 };
-      if (str.includes('if') || str.includes('switch') || str.includes('router') || str.includes('merge')) return { prefix: 'RTR', category: 'Router / Logic', zone: 1, complexity: 1.3 };
-      if (str.includes('http') || str.includes('request') || str.includes('enrich') || str.includes('hubspot')) return { prefix: 'API', category: 'External API', zone: 1, complexity: 1.4 };
-      if (str.includes('postgres') || str.includes('supabase') || str.includes('airtable') || str.includes('sheets') || str.includes('stripe')) return { prefix: 'DB', category: 'Persistence / Billing', zone: 2, complexity: 1.3 };
-      if (str.includes('slack') || str.includes('email') || str.includes('gmail') || str.includes('telegram') || str.includes('discord')) return { prefix: 'OPS', category: 'Notification / Out', zone: 2, complexity: 1.0 };
-      return { prefix: 'NOD', category: 'Operation', zone: 1, complexity: 1.2 };
+      const full = String(rawType).toLowerCase();
+      const tail = full.split(/[.:]/).pop();
+      const name = String(rawName).toLowerCase();
+      const R = (prefix, category, zone, complexity) => ({ prefix, category, zone, complexity });
+      if (/webhook|trigger|^cron$|schedule|^interval$|^form$|watch/.test(full)) return R('TRG', 'Trigger', 0, 1.0);
+      if (/langchain|openai|anthropic|gemini|ollama|mistral|llm|agent|claude/.test(full)) return R('AI', 'LLM / Agent', 1, 1.6);
+      if (/\b(auth|validat\w*|guard|filtr\w*|sanitiz\w*|redact\w*)\b/.test(name)) return R('SEC', 'Guardrail', 0, 1.2);
+      if (/^(if|switch|merge|filter|splitinbatches|splitout|router)$/.test(tail) || /(^|:)router/.test(full)) return R('RTR', 'Router / Logic', 1, 1.3);
+      if (/httprequest|^http:/.test(full)) return R('API', 'External API', 1, 1.4);
+      if (/postgres|mysql|mongo|supabase|airtable|sheets|stripe|paypal|redis|notion|database|insertrecord/.test(full)) return R('DB', 'Persistence / Billing', 2, 1.3);
+      if (/slack|gmail|email|telegram|discord|whatsapp|twilio|sendgrid|teams|mattermost/.test(full)) return R('OPS', 'Notification / Out', 2, 1.0);
+      if (/\b(http|request|api|enrich\w*)\b/.test(name)) return R('API', 'External API', 1, 1.4);
+      return R('NOD', 'Operation', 1, 1.2);
     }
 
+    // Evaluador básico para blueprints que NO son n8n (Make u otros). Para n8n se usa SoFsEngine.
     function evaluateImportedNode(node, rawObj, engine) {
       const jsonStr = JSON.stringify(rawObj || {}).toLowerCase();
       const role = node._role;
-      const hasRetry = jsonStr.includes('"retryonfail":true') || jsonStr.includes('"maxtries"') || jsonStr.includes('"break"') || jsonStr.includes('onerror');
+      const hasRetry = /"retryonfail":true|"maxtries"|onerror|"break"/.test(jsonStr);
       const hasTimeout = jsonStr.includes('"timeout"');
-      const hasAuth = jsonStr.includes('authentication') || jsonStr.includes('credentials') || jsonStr.includes('authorization');
-      const hasIdempotency = jsonStr.includes('idempotency');
-      const hasPiiExposure = (role.prefix === 'AI' || role.prefix === 'OPS') && (jsonStr.includes('email') || jsonStr.includes('phone') || jsonStr.includes('{{') || jsonStr.includes('$json'));
-      const usesHeavyModel = jsonStr.includes('gpt-4') || jsonStr.includes('claude-3-opus') || jsonStr.includes('o1-');
+      const piiHint = /(email|correo|phone|tel[eé]fono|curp|\brfc\b|address|direcci[oó]n)/.test(jsonStr);
+      const heavy = /(gpt-4|claude-3-opus|\bo1\b)/.test(jsonStr) && !/(mini|nano|haiku|flash)/.test(jsonStr);
+      const ok = (what) => ({ status: 'ok', thought: `Revisando ${node.name} → ${what}`, detail: 'Sin hallazgos con las reglas básicas de este preset.', fix: 'Ninguna acción requerida.' });
 
-      let resFinding = { status: 'ok', thought: `Inspeccionando nodo ${node.name} (${engine}) → Estructura válida.`, detail: `Configuración nominal detectada para ${node.type}.`, fix: 'Ninguna acción requerida.' };
+      let resilience = ok('sin hallazgos de resiliencia.');
       if ((role.prefix === 'API' || role.prefix === 'AI') && !hasRetry && !hasTimeout) {
-        resFinding = { status: 'critical', ruleId: 'RES-HTTP-RETRY', thought: `¡Alerta! ${node.name} ejecuta llamadas externas sin política de reintentos ni timeout.`, detail: `Si el servicio externo responde con 429/502, el flujo de ${engine} fallará sin recuperación.`, fix: engine === 'n8n' ? 'Activar "Retry On Fail" (max 3 tries) y Timeout.' : 'Añadir Error Handler directive (Break / Resume).' };
-      } else if (role.prefix === 'DB' && jsonStr.includes('stripe') && !hasIdempotency) {
-        resFinding = { status: 'critical', ruleId: 'RES-IDEMPOTENCY', thought: `¡Riesgo Crítico! Mutación financiera en ${node.name} sin Idempotency-Key.`, detail: 'Reejecutar este flujo puede provocar cobros duplicados.', fix: 'Inyectar Idempotency-Key derivada del evento.' };
+        resilience = { status: 'warning', ruleId: 'RES-HTTP-RETRY', thought: `${node.name} → llamada externa sin reintentos ni timeout visibles.`, detail: 'Si el servicio externo responde con error o límite de cuota, el escenario se detiene en este módulo. (Análisis básico de Make.)', fix: 'Añade un manejador de errores con reintento y un timeout explícito.' };
       }
-
-      let secFinding = { status: 'ok', thought: `Verificando seguridad en ${node.name} → Sin secretos expuestos.`, detail: 'Credenciales referenciadas de forma segura.', fix: 'Ninguna acción requerida.' };
-      if (role.prefix === 'TRG' && !hasAuth) {
-        secFinding = { status: 'warning', ruleId: 'SEC-HMAC-AUTH', thought: `Trigger ${node.name} sin esquema de autenticación/firma explícito.`, detail: 'Un webhook público sin validación puede recibir payloads falsificados.', fix: 'Activar Header Auth o firma HMAC-SHA256.' };
-      } else if (role.prefix === 'AI' && hasPiiExposure) {
-        secFinding = { status: 'critical', ruleId: 'SEC-PII-SCRUB', thought: `¡Exposición PII! ${node.name} envía variables dinámicas con datos personales al LLM.`, detail: 'Campos como email viajan sin sanitización previa.', fix: 'Agregar nodo previo de enmascaramiento PII.' };
+      let security = ok('sin hallazgos de seguridad.');
+      if (role.prefix === 'AI' && piiHint) {
+        security = { status: 'warning', ruleId: 'SEC-PII-SCRUB', thought: `${node.name} → el módulo de IA parece recibir datos personales.`, detail: 'Heurística: el módulo menciona campos como correo o teléfono. Revisa si se redactan antes de enviarlos.', fix: 'Enmascara los datos personales antes de llamar al LLM o envía solo los campos necesarios.' };
       }
-
-      let perfFinding = { status: 'ok', thought: `Evaluando latencia de ${node.name} → Ejecución eficiente.`, detail: 'Sin cuellos de botella estructurales.', fix: 'Ninguna acción requerida.' };
-      if (role.prefix === 'AI' && usesHeavyModel) {
-        perfFinding = { status: 'critical', ruleId: 'PERF-LLM-TIER', thought: `¡Sobrecosto LLM! ${node.name} utiliza un modelo pesado de alto costo.`, detail: 'Incrementa costo y latencia innecesariamente.', fix: 'Evaluar migración a variante Mini/Flash.' };
-      } else if (role.prefix === 'API') {
-        perfFinding = { status: 'warning', ruleId: 'PERF-API-CACHE', thought: `Llamada externa síncrona en ${node.name} → Impacta latencia total.`, detail: 'Considera cachear respuestas frecuentes.', fix: 'Implementar caché Redis TTL.' };
+      let performance = ok('sin hallazgos de costo.');
+      if (role.prefix === 'AI' && heavy) {
+        performance = { status: 'ok', ruleId: 'PERF-LLM-TIER', thought: `${node.name} → modelo de gama alta configurado.`, detail: 'Nota: para tareas simples suele bastar un modelo más pequeño.', fix: 'Prueba un modelo menor y compara calidad y costo.' };
       }
+      return { resilience, security, performance };
+    }
 
-      return { resilience: resFinding, security: secFinding, performance: perfFinding };
+    const ENGINE_TO_PATCH_ID = { 'RES-RETRY': 'RES-HTTP-RETRY', 'SEC-WEBHOOK-AUTH': 'SEC-HMAC-AUTH', 'SEC-PII-LLM': 'SEC-PII-SCRUB', 'SEC-LOG-PAYLOAD': 'SEC-LOG-REDACT' };
+    function okFinding(name) {
+      return { status: 'ok', thought: `Revisando ${name} → sin hallazgos en este preset.`, detail: 'Sin hallazgos con las reglas activas de este preset.', fix: 'Ninguna acción requerida.' };
+    }
+    // Traduce los hallazgos de SoFsEngine (n8n) al modelo por nodo de la bóveda.
+    function buildPresetFindings(res, nodes) {
+      const out = { resilience: {}, security: {}, performance: {}, handoff: {} };
+      const firstName = nodes[0] && nodes[0].name;
+      nodes.forEach(n => Object.keys(out).forEach(p => {
+        const fs = res.findings.filter(f => f.preset === p && (f.node === n.name || (f.node === null && n.name === firstName)));
+        if (!fs.length) { out[p][n.id] = okFinding(n.name); return; }
+        const top = fs[0];
+        const status = top.severity === 'critical' ? 'critical' : top.severity === 'warning' ? 'warning' : 'ok';
+        let ruleId = ENGINE_TO_PATCH_ID[top.id] || top.id;
+        if (top.id === 'RES-IDEMPOTENCY' && /sin protección visible/.test(top.title)) ruleId = 'RES-DEDUPE';
+        out[p][n.id] = status === 'ok'
+          ? { status, ruleId, thought: top.thought, detail: fs.map(f => `Nota: ${f.title}. ${f.fix}`).join(' '), fix: 'Ninguna acción requerida.' }
+          : { status, ruleId, thought: top.thought, detail: fs.map(f => `${f.title}: ${f.detail}`).join(' | '), fix: fs.map(f => f.fix).join(' · ') };
+      }));
+      return out;
     }
 
     function parseAutomationBlueprint(rawJsonText) {
@@ -1601,14 +1850,20 @@
         });
       });
 
-      const newFindings = { resilience: {}, security: {}, performance: {} };
-      extractedNodes.forEach(node => {
-        node.downstream = extractedEdges.filter(e => e.from === node.id).map(e => e.to);
-        const ev = evaluateImportedNode(node, node._raw, engine);
-        newFindings.resilience[node.id] = ev.resilience;
-        newFindings.security[node.id] = ev.security;
-        newFindings.performance[node.id] = ev.performance;
-      });
+      extractedNodes.forEach(node => { node.downstream = extractedEdges.filter(e => e.from === node.id).map(e => e.to); });
+      let newFindings;
+      if (engine === 'n8n') {
+        newFindings = buildPresetFindings(SoFsEngine.analyze(data), extractedNodes);
+      } else {
+        newFindings = { resilience: {}, security: {}, performance: {}, handoff: {} };
+        extractedNodes.forEach(node => {
+          const ev = evaluateImportedNode(node, node._raw, engine);
+          newFindings.resilience[node.id] = ev.resilience;
+          newFindings.security[node.id] = ev.security;
+          newFindings.performance[node.id] = ev.performance;
+          newFindings.handoff[node.id] = okFinding(node.name);
+        });
+      }
 
       activeFlowName = flowTitle;
       activeEngineBadge = engine;
@@ -1623,6 +1878,7 @@
       AUDIT_PRESETS.resilience.findings = newFindings.resilience;
       AUDIT_PRESETS.security.findings = newFindings.security;
       AUDIT_PRESETS.performance.findings = newFindings.performance;
+      AUDIT_PRESETS.handoff.findings = newFindings.handoff;
 
       document.getElementById('headerFlowName').textContent = `${flowTitle} [${engine}]`;
       resetVaultVisuals();
@@ -1775,7 +2031,19 @@
       setTimeout(() => { btn.textContent = 'Copiar Parche JSON'; }, 2000);
     });
 
-    window.addEventListener('load', initVault);
+    window.addEventListener('load', () => {
+      initVault();
+      let pending = null;
+      try { pending = sessionStorage.getItem('sofs_import'); sessionStorage.removeItem('sofs_import'); } catch (e) { /* sin almacenamiento */ }
+      if (pending) {
+        try { parseAutomationBlueprint(pending); runSoFsAudit(); }
+        catch (err) {
+          importErrorBanner.textContent = `⚠ ${err.message}`;
+          importErrorBanner.classList.remove('hidden');
+          importModal.classList.remove('hidden');
+        }
+      }
+    });
   </script>
 </body>
 </html>
