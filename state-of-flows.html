@@ -125,14 +125,14 @@
       <div class="truncate">
         <div class="flex items-center gap-2">
           <span class="font-semibold text-sm sm:text-base tracking-tight text-white">State of Flows</span>
-          <span class="font-mono text-[10px] px-1.5 py-0.5 rounded bg-cyan-500/15 text-cyan-300 border border-cyan-500/30">SoFs v0.9</span>
+          <span class="font-mono text-[10px] px-1.5 py-0.5 rounded bg-cyan-500/15 text-cyan-300 border border-cyan-500/30">SoFs v1.0</span>
         </div>
-        <p class="text-[11px] text-slate-400 hidden md:block truncate">Flow: <span class="font-mono text-slate-300">prod_onboarding_billing_pipeline</span></p>
+        <p class="text-[11px] text-slate-400 hidden md:block truncate">Flow: <span id="headerFlowName" class="font-mono text-slate-300">prod_onboarding_billing_pipeline</span></p>
       </div>
     </div>
 
     <!-- Controles Centrales: Presets & Velocidad -->
-    <div class="flex items-center gap-2 sm:gap-3">
+    <div class="flex items-center gap-2 sm:gap-2.5">
       <!-- Selector de Preset de Auditoría -->
       <div class="flex items-center bg-obsidian-850 border border-slate-800 rounded-lg p-0.5">
         <label for="presetSelect" class="sr-only">Preset de Auditoría</label>
@@ -149,16 +149,30 @@
       </div>
 
       <!-- Velocidad de Escaneo -->
-      <div class="hidden lg:flex items-center bg-obsidian-850 border border-slate-800 rounded-lg p-0.5 text-xs font-mono" id="speedControls">
+      <div class="hidden xl:flex items-center bg-obsidian-850 border border-slate-800 rounded-lg p-0.5 text-xs font-mono" id="speedControls">
         <button data-speed="1" class="speed-btn px-2 py-1 rounded-md bg-slate-700/80 text-white transition">1x</button>
         <button data-speed="2.2" class="speed-btn px-2 py-1 rounded-md text-slate-400 hover:text-white transition">2x</button>
         <button data-speed="instant" class="speed-btn px-2 py-1 rounded-md text-slate-400 hover:text-white transition">Instant</button>
       </div>
 
       <!-- Seguimiento de Cámara -->
-      <button id="cameraFollowBtn" title="Seguir sonda automáticamente" class="hidden sm:flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-medium border border-cyan-500/40 bg-cyan-500/10 text-cyan-300 transition">
+      <button id="cameraFollowBtn" title="Seguir sonda automáticamente" class="hidden lg:flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-medium border border-cyan-500/40 bg-cyan-500/10 text-cyan-300 transition cursor-pointer">
         <span class="w-1.5 h-1.5 rounded-full bg-cyan-400 animate-pulse" id="cameraDot"></span>
         <span>Auto-Cámara</span>
+      </button>
+
+      <!-- Configurar Motor Híbrido (Reglas + LLM) -->
+      <button id="openHybridConfigBtn" class="hidden sm:flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-medium bg-obsidian-850 hover:bg-obsidian-800 text-purple-300 border border-purple-500/30 transition cursor-pointer" title="Configurar Motor Híbrido Reglas + LLM">
+        <svg class="w-3.5 h-3.5 text-purple-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2v4m0 12v4M4.93 4.93l2.83 2.83m8.48 8.48l2.83 2.83M2 12h4m12 0h4M4.93 19.07l2.83-2.83m8.48-8.48l2.83-2.83"/></svg>
+        <span id="hybridModeBadge">Híbrido: Local</span>
+      </button>
+
+      <!-- Botón Importar Blueprint n8n / Make -->
+      <button id="openImportModalBtn" class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium bg-obsidian-850 hover:bg-obsidian-800 text-slate-200 border border-slate-700/90 transition cursor-pointer" title="Importar archivo JSON de n8n o Make">
+        <svg class="w-3.5 h-3.5 text-cyan-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M17 8l-5-5-5 5M12 3v12" />
+        </svg>
+        <span class="hidden sm:inline">Importar Flow</span>
       </button>
 
       <!-- Botón Principal de Ejecución -->
@@ -170,6 +184,126 @@
       </button>
     </div>
   </header>
+
+  <!-- MODAL 1: IMPORTACIÓN NATIVA (n8n / Make Blueprints) -->
+  <div id="importBlueprintModal" class="hidden fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
+    <div class="bg-obsidian-900 border border-slate-700/90 rounded-2xl max-w-2xl w-full p-5 sm:p-6 shadow-2xl space-y-4">
+      <div class="flex items-center justify-between border-b border-slate-800 pb-3">
+        <div>
+          <div class="flex items-center gap-2">
+            <span class="text-[10px] font-mono uppercase tracking-wider px-2 py-0.5 rounded bg-cyan-500/15 text-cyan-300 border border-cyan-500/30">Parser Nativo v1.0</span>
+            <span class="text-[11px] font-mono text-slate-400">n8n · Make · JSON</span>
+          </div>
+          <h3 class="text-base sm:text-lg font-bold text-white mt-1">Importar Blueprint a la Bóveda SoFs</h3>
+        </div>
+        <button id="closeImportModalBtn" class="p-1.5 rounded-lg bg-slate-800 text-slate-400 hover:text-white cursor-pointer">
+          <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6L6 18M6 6l12 12"/></svg>
+        </button>
+      </div>
+
+      <div class="flex flex-wrap items-center justify-between gap-2 bg-obsidian-950 border border-dashed border-slate-700 rounded-xl p-3">
+        <div class="flex items-center gap-2.5 text-xs text-slate-300">
+          <svg class="w-5 h-5 text-cyan-400 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+          <span>Sube un archivo <code class="font-mono text-cyan-300">.json</code> exportado desde n8n o Make, o pégalo abajo:</span>
+        </div>
+        <label class="px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-xs font-medium text-white cursor-pointer transition">
+          Seleccionar .json
+          <input type="file" id="blueprintFileInput" accept=".json,application/json" class="hidden" />
+        </label>
+      </div>
+
+      <textarea id="blueprintTextarea" rows="8" class="w-full rounded-xl bg-obsidian-950 border border-slate-800 p-3 font-mono text-xs text-slate-300 focus:outline-none focus:border-cyan-500 select-text" placeholder='Pega aquí el JSON exportado de tu workflow de n8n o scenario blueprint de Make...'></textarea>
+
+      <div id="importErrorBanner" class="hidden rounded-lg bg-rose-500/10 border border-rose-500/30 px-3 py-2 text-xs font-mono text-rose-300"></div>
+
+      <div class="flex flex-wrap items-center justify-between gap-2 pt-1">
+        <div class="flex items-center gap-2">
+          <span class="text-[11px] font-mono text-slate-500">Probar muestra:</span>
+          <button id="loadSampleN8nBtn" class="px-2.5 py-1.5 rounded-lg bg-obsidian-850 hover:bg-obsidian-800 border border-slate-700 text-[11px] font-mono text-cyan-300 cursor-pointer transition">
+            Ejemplo n8n
+          </button>
+          <button id="loadSampleMakeBtn" class="px-2.5 py-1.5 rounded-lg bg-obsidian-850 hover:bg-obsidian-800 border border-slate-700 text-[11px] font-mono text-purple-300 cursor-pointer transition">
+            Ejemplo Make
+          </button>
+        </div>
+        <button id="parseAndLoadBtn" class="px-5 py-2 rounded-xl text-xs sm:text-sm font-semibold bg-cyan-500 hover:bg-cyan-400 text-slate-950 shadow-[0_0_20px_rgba(34,211,238,0.25)] cursor-pointer transition">
+          Reconstruir Bóveda y Auditar
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL 2: MOTOR HÍBRIDO REGLAS + LLM PARA PARCHES AUTOMÁTICOS -->
+  <div id="hybridConfigModal" class="hidden fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
+    <div class="bg-obsidian-900 border border-purple-500/40 rounded-2xl max-w-lg w-full p-5 sm:p-6 shadow-2xl space-y-4">
+      <div class="flex items-center justify-between border-b border-slate-800 pb-3">
+        <div>
+          <span class="text-[10px] font-mono uppercase tracking-wider px-2 py-0.5 rounded bg-purple-500/15 text-purple-300 border border-purple-500/30">Motor Híbrido SoFs</span>
+          <h3 class="text-base font-bold text-white mt-1">Reglas Deterministas + Síntesis LLM</h3>
+        </div>
+        <button id="closeHybridConfigBtn" class="p-1.5 rounded-lg bg-slate-800 text-slate-400 hover:text-white cursor-pointer">
+          <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6L6 18M6 6l12 12"/></svg>
+        </button>
+      </div>
+
+      <p class="text-xs text-slate-300 leading-relaxed">
+        SoFs combina <strong class="text-cyan-300">reglas estáticas deterministas</strong> (latencia cero, 100% privado) con un <strong class="text-purple-300">generador de parches JSON</strong> adaptado al esquema de n8n o Make. Opcionalmente, conecta tu API Key (OpenAI / OpenRouter) para enriquecer los parches con razonamiento LLM en vivo desde tu navegador.
+      </p>
+
+      <div class="space-y-3 bg-obsidian-950 border border-slate-800 rounded-xl p-3.5">
+        <div>
+          <label class="block text-[11px] font-mono text-slate-400 mb-1">Proveedor LLM (Opcional - BYOK en sesión)</label>
+          <select id="llmProviderSelect" class="w-full rounded-lg bg-obsidian-900 border border-slate-700 px-3 py-2 text-xs text-slate-200 focus:outline-none focus:border-purple-400">
+            <option value="local">Motor Híbrido Heurístico Integrado (Sin API Key)</option>
+            <option value="openai">OpenAI API (gpt-4o-mini)</option>
+            <option value="openrouter">OpenRouter API (claude-3.5-sonnet / gemini-flash)</option>
+          </select>
+        </div>
+
+        <div id="apiKeyFieldGroup" class="hidden space-y-2">
+          <label class="block text-[11px] font-mono text-slate-400">API Key (Solo en memoria de tu navegador, nunca se guarda en servidor)</label>
+          <input id="llmApiKeyInput" type="password" placeholder="sk-..." class="w-full rounded-lg bg-obsidian-900 border border-slate-700 px-3 py-2 font-mono text-xs text-white focus:outline-none focus:border-purple-400 select-text" />
+        </div>
+      </div>
+
+      <div class="flex items-center justify-end gap-2">
+        <button id="saveHybridConfigBtn" class="px-4 py-2 rounded-xl text-xs font-semibold bg-purple-500 hover:bg-purple-400 text-slate-950 transition cursor-pointer">
+          Aplicar Configuración
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL 3: VISOR DE PARCHE AUTOMÁTICO GENERADO (AUTO-PATCH) -->
+  <div id="patchViewerModal" class="hidden fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
+    <div class="bg-obsidian-900 border border-emerald-500/40 rounded-2xl max-w-2xl w-full p-5 sm:p-6 shadow-2xl space-y-4">
+      <div class="flex items-center justify-between border-b border-slate-800 pb-3">
+        <div>
+          <div class="flex items-center gap-2">
+            <span class="text-[10px] font-mono uppercase tracking-wider px-2 py-0.5 rounded bg-emerald-500/15 text-emerald-300 border border-emerald-500/30">Auto-Patch Híbrido</span>
+            <span id="patchEngineTag" class="text-[11px] font-mono text-slate-400">n8n / Make</span>
+          </div>
+          <h3 id="patchModalTitle" class="text-base font-bold text-white mt-1">Parche de Configuración Sugerido</h3>
+        </div>
+        <button id="closePatchModalBtn" class="p-1.5 rounded-lg bg-slate-800 text-slate-400 hover:text-white cursor-pointer">
+          <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6L6 18M6 6l12 12"/></svg>
+        </button>
+      </div>
+
+      <p id="patchRationaleText" class="text-xs text-slate-300 leading-relaxed"></p>
+
+      <div class="relative">
+        <pre id="patchCodeOutput" class="w-full max-h-72 overflow-auto rounded-xl bg-obsidian-950 border border-slate-800 p-3.5 font-mono text-xs text-emerald-300 select-text"></pre>
+      </div>
+
+      <div class="flex items-center justify-between gap-2 pt-1">
+        <span id="patchSourceBadge" class="text-[11px] font-mono text-purple-300">Generado por: Reglas + Síntesis Contextual</span>
+        <button id="copyPatchSnippetBtn" class="px-4 py-2 rounded-xl text-xs font-semibold bg-emerald-500 hover:bg-emerald-400 text-slate-950 transition cursor-pointer">
+          Copiar Parche JSON
+        </button>
+      </div>
+    </div>
+  </div>
 
   <!-- ÁREA PRINCIPAL: BÓVEDA ESPACIAL + PANEL LATERAL DE RAZONAMIENTO -->
   <div class="flex-1 flex overflow-hidden relative">
@@ -194,13 +328,13 @@
 
       <!-- Controles de Zoom Inferiores Izquierdos -->
       <div class="absolute bottom-4 left-4 z-20 flex items-center gap-1.5 bg-obsidian-950/90 backdrop-blur-md border border-slate-800 rounded-lg p-1">
-        <button id="zoomOutBtn" class="p-1.5 rounded hover:bg-slate-800 text-slate-300 transition" title="Alejar">
+        <button id="zoomOutBtn" class="p-1.5 rounded hover:bg-slate-800 text-slate-300 transition cursor-pointer" title="Alejar">
           <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14"/></svg>
         </button>
-        <button id="resetViewBtn" class="px-2 py-1 rounded hover:bg-slate-800 text-[11px] font-mono text-slate-300 transition" title="Centrar Bóveda">
+        <button id="resetViewBtn" class="px-2 py-1 rounded hover:bg-slate-800 text-[11px] font-mono text-slate-300 transition cursor-pointer" title="Centrar Bóveda">
           Centrar
         </button>
-        <button id="zoomInBtn" class="p-1.5 rounded hover:bg-slate-800 text-slate-300 transition" title="Acercar">
+        <button id="zoomInBtn" class="p-1.5 rounded hover:bg-slate-800 text-slate-300 transition cursor-pointer" title="Acercar">
           <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14M5 12h14"/></svg>
         </button>
       </div>
@@ -227,13 +361,6 @@
                 <feMergeNode in="SourceGraphic" />
               </feMerge>
             </filter>
-            <filter id="glowStrong" x="-60%" y="-60%" width="220%" height="220%">
-              <feGaussianBlur stdDeviation="7" result="blur" />
-              <feMerge>
-                <feMergeNode in="blur" />
-                <feMergeNode in="SourceGraphic" />
-              </feMerge>
-            </filter>
           </defs>
 
           <!-- Conexiones entre nodos -->
@@ -247,24 +374,19 @@
 
           <!-- ARTEFACTO / SONDA GEOMÉTRICA DE ESCANEO -->
           <g id="scannerProbe" transform="translate(180, 260)" style="opacity: 0;">
-            <!-- Haz radial de inspección -->
             <circle id="probeAura" r="44" fill="rgba(34, 211, 238, 0.08)" />
-            <!-- Anillo exterior segmentado -->
             <g class="probe-ring-outer">
               <circle r="34" fill="none" stroke="#22d3ee" stroke-width="1.5" stroke-dasharray="14 8 4 8" id="probeOuterStroke" />
             </g>
-            <!-- Anillo interior de precisión -->
             <g class="probe-ring-inner">
               <circle r="23" fill="none" stroke="#38bdf8" stroke-width="1.2" stroke-dasharray="28 12" id="probeInnerStroke" />
             </g>
-            <!-- Retícula cardinal -->
             <g stroke="#22d3ee" stroke-width="1.5" id="probeCrosshair">
               <line x1="0" y1="-40" x2="0" y2="-30" />
               <line x1="0" y1="30" x2="0" y2="40" />
               <line x1="-40" y1="0" x2="-30" y2="0" />
               <line x1="30" y1="0" x2="40" y2="0" />
             </g>
-            <!-- Núcleo de la sonda -->
             <polygon points="0,-9 8,0 0,9 -8,0" fill="#22d3ee" filter="url(#glowCyan)" id="probeCore" />
           </g>
         </svg>
@@ -290,8 +412,8 @@
       </div>
     </main>
 
-    <!-- PANEL DERECHO: RAZONAMIENTO EN VIVO & INFORME SIMPLIFICADO SOFS -->
-    <aside id="reportSidebar" class="fixed md:static inset-y-0 right-0 w-full sm:w-96 lg:w-[420px] bg-obsidian-950/95 backdrop-blur-xl border-l border-slate-800/90 flex flex-col z-40 transform translate-x-full md:translate-x-0 transition-transform duration-300">
+    <!-- PANEL DERECHO: RAZONAMIENTO, INFORME SIMPLIFICADO & HISTORIAL -->
+    <aside id="reportSidebar" class="fixed md:static inset-y-0 right-0 w-full sm:w-96 lg:w-[440px] bg-obsidian-950/95 backdrop-blur-xl border-l border-slate-800/90 flex flex-col z-40 transform translate-x-full md:translate-x-0 transition-transform duration-300">
 
       <!-- Cabecera del Panel + Salud Global -->
       <div class="p-4 border-b border-slate-800/80">
@@ -305,10 +427,9 @@
           </button>
         </div>
 
-        <!-- Tarjeta de Estado General (Score + Contadores) -->
+        <!-- Tarjeta de Estado General (Score + Delta Histórico + Contadores) -->
         <div class="bg-obsidian-900 border border-slate-800 rounded-xl p-3 flex items-center justify-between gap-3">
           <div class="flex items-center gap-3">
-            <!-- Gauge circular SVG -->
             <div class="relative w-14 h-14 flex items-center justify-center shrink-0">
               <svg class="w-14 h-14 -rotate-90" viewBox="0 0 56 56">
                 <circle cx="28" cy="28" r="23" fill="none" stroke="#1e293b" stroke-width="5" />
@@ -317,13 +438,15 @@
               <span id="healthScoreText" class="absolute font-mono text-sm font-bold text-white">--</span>
             </div>
             <div>
-              <div class="text-[11px] font-mono uppercase text-slate-400">Estado del Flow</div>
+              <div class="flex items-center gap-1.5">
+                <span class="text-[11px] font-mono uppercase text-slate-400">Estado del Flow</span>
+                <span id="scoreDeltaBadge" class="hidden font-mono text-[10px] px-1.5 py-0.5 rounded bg-slate-800 text-slate-300"></span>
+              </div>
               <div id="flowVerdictText" class="text-sm font-semibold text-slate-200">Listo para escanear</div>
               <div id="scanProgressText" class="text-[11px] text-slate-400 font-mono mt-0.5">0 / 9 nodos auditados</div>
             </div>
           </div>
 
-          <!-- Mini badges de conteo -->
           <div class="flex flex-col gap-1 text-[11px] font-mono">
             <span class="px-2 py-0.5 rounded bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 flex items-center justify-between gap-2">
               <span>OK</span><strong id="countOk">0</strong>
@@ -337,12 +460,16 @@
           </div>
         </div>
 
-        <!-- Tabs: Razonamiento en Vivo vs Informe Simplificado -->
-        <div class="grid grid-cols-2 gap-1 bg-obsidian-900 p-1 rounded-lg border border-slate-800 mt-3 text-xs font-medium">
-          <button id="tabStreamBtn" class="py-1.5 rounded-md bg-slate-800 text-white transition">Razonamiento en Vivo</button>
-          <button id="tabReportBtn" class="py-1.5 rounded-md text-slate-400 hover:text-white transition flex items-center justify-center gap-1.5">
-            <span>Informe Simplificado</span>
+        <!-- Tabs: Razonamiento | Informe | Historial -->
+        <div class="grid grid-cols-3 gap-1 bg-obsidian-900 p-1 rounded-lg border border-slate-800 mt-3 text-[11px] font-medium">
+          <button id="tabStreamBtn" class="py-1.5 rounded-md bg-slate-800 text-white transition cursor-pointer">Razonamiento</button>
+          <button id="tabReportBtn" class="py-1.5 rounded-md text-slate-400 hover:text-white transition flex items-center justify-center gap-1 cursor-pointer">
+            <span>Informe</span>
             <span id="reportReadyDot" class="hidden w-1.5 h-1.5 rounded-full bg-cyan-400"></span>
+          </button>
+          <button id="tabHistoryBtn" class="py-1.5 rounded-md text-slate-400 hover:text-white transition flex items-center justify-center gap-1 cursor-pointer">
+            <span>Historial</span>
+            <span id="historyCountBadge" class="font-mono text-[10px] px-1 rounded bg-slate-800 text-slate-300">0</span>
           </button>
         </div>
       </div>
@@ -361,7 +488,7 @@
             </div>
             <p class="text-sm font-medium text-slate-200 mb-1">Sonda SoFs en espera</p>
             <p class="text-xs text-slate-400 leading-relaxed">
-              Selecciona un preset de auditoría y presiona <strong class="text-cyan-400">Iniciar Escaneo SoFs</strong> para desplegar el artefacto sobre la bóveda y observar su razonamiento sección por sección.
+              Selecciona un preset o importa un JSON de <strong class="text-slate-200">n8n / Make</strong>, y presiona <strong class="text-cyan-400">Iniciar Escaneo SoFs</strong> para auditar y generar parches automáticos.
             </p>
           </div>
           <div id="reasoningFeed" class="space-y-2.5"></div>
@@ -372,6 +499,15 @@
           <div id="reportContent"></div>
         </div>
 
+        <!-- Vista 3: Historial Persistente de Auditorías -->
+        <div id="historyView" class="hidden space-y-3">
+          <div class="flex items-center justify-between">
+            <span class="text-[11px] font-mono uppercase tracking-wider text-slate-400">Auditorías Guardadas (Local)</span>
+            <button id="clearHistoryBtn" class="text-[11px] font-mono text-rose-400 hover:underline cursor-pointer">Limpiar historial</button>
+          </div>
+          <div id="historyListContainer" class="space-y-2.5"></div>
+        </div>
+
       </div>
     </aside>
 
@@ -380,357 +516,115 @@
   <script>
     /**
      * ============================================================================
-     * STATE OF FLOWS (SoFs) — MOTOR DE BÓVEDA, SONDA DE ESCANEO Y AUDITORÍA
+     * STATE OF FLOWS (SoFs) v1.0
+     * Bóveda Espacial + Parser n8n/Make + Historial Persistente + Motor Híbrido
      * ============================================================================
      */
 
-    // 1. DEFINICIÓN DE SECCIONES DE LA BÓVEDA (ZONAS LÓGICAS)
-    const VAULT_SECTIONS = [
+    let activeFlowName = 'prod_onboarding_billing_pipeline';
+    let activeEngineBadge = 'DEMO';
+
+    let VAULT_SECTIONS = [
       { id: 'sec_ingest', title: '01 // INGESTA & VALIDACIÓN', x: 70, y: 120, w: 390, h: 310 },
       { id: 'sec_logic',  title: '02 // ENRIQUECIMIENTO & DECISIÓN IA', x: 510, y: 90, w: 470, h: 520 },
       { id: 'sec_output', title: '03 // PERSISTENCIA & NOTIFICACIÓN', x: 1030, y: 120, w: 460, h: 520 }
     ];
 
-    // 2. DEFINICIÓN DE NODOS DEL FLOW DE AUTOMATIZACIÓN
-    const FLOW_NODES = [
-      {
-        id: 'n1',
-        code: 'TRG-01',
-        name: 'Webhook Entrada',
-        type: 'Trigger HTTP',
-        section: '01 // INGESTA',
-        x: 170,
-        y: 260,
-        complexity: 1.0,
-        meta: 'POST /v1/leads/capture',
-        downstream: ['n2', 'n3', 'n4', 'n5', 'n6', 'n7', 'n8', 'n9']
-      },
-      {
-        id: 'n2',
-        code: 'SEC-02',
-        name: 'Filtro Auth & PII',
-        type: 'Guardrail / Middleware',
-        section: '01 // INGESTA',
-        x: 365,
-        y: 260,
-        complexity: 1.3,
-        meta: 'HMAC + Regex Masking',
-        downstream: ['n3', 'n4', 'n5', 'n6', 'n7', 'n8', 'n9']
-      },
-      {
-        id: 'n3',
-        code: 'API-03',
-        name: 'CRM Enrich API',
-        type: 'HTTP Request',
-        section: '02 // ENRIQUECIMIENTO',
-        x: 610,
-        y: 200,
-        complexity: 1.5,
-        meta: 'GET api.clearbit/v2/person',
-        downstream: ['n4', 'n5', 'n6', 'n7', 'n8', 'n9']
-      },
-      {
-        id: 'n4',
-        code: 'AI-04',
-        name: 'Clasificador Intent IA',
-        type: 'LLM Node (GPT-4o)',
-        section: '02 // DECISIÓN IA',
-        x: 610,
-        y: 440,
-        complexity: 1.6,
-        meta: 'temp: 0.1 | max_tokens: 800',
-        downstream: ['n5', 'n6', 'n7', 'n8', 'n9']
-      },
-      {
-        id: 'n5',
-        code: 'RTR-05',
-        name: 'Router Condicional',
-        type: 'Switch / Branch',
-        section: '02 // DECISIÓN IA',
-        x: 865,
-        y: 310,
-        complexity: 1.4,
-        meta: 'score >= 0.85 ? VIP : STD',
-        downstream: ['n6', 'n7', 'n8', 'n9']
-      },
-      {
-        id: 'n6',
-        code: 'DB-06',
-        name: 'Postgres Upsert',
-        type: 'Database Write',
-        section: '03 // PERSISTENCIA',
-        x: 1140,
-        y: 210,
-        complexity: 1.2,
-        meta: 'ON CONFLICT (email) UPDATE',
-        downstream: ['n8', 'n9']
-      },
-      {
-        id: 'n7',
-        code: 'DLQ-07',
-        name: 'Cola Fallback / Retry',
-        type: 'Dead Letter Queue',
-        section: '03 // RESILIENCIA',
-        x: 1140,
-        y: 480,
-        complexity: 1.2,
-        meta: 'Redis Stream Retry x3',
-        downstream: ['n9']
-      },
-      {
-        id: 'n8',
-        code: 'BIL-08',
-        name: 'Stripe Billing Sync',
-        type: 'External Mutation',
-        section: '03 // PERSISTENCIA',
-        x: 1380,
-        y: 210,
-        complexity: 1.5,
-        meta: 'POST /v1/subscriptions',
-        downstream: ['n9']
-      },
-      {
-        id: 'n9',
-        code: 'OPS-09',
-        name: 'Alerta Slack & Audit',
-        type: 'Notification',
-        section: '03 // NOTIFICACIÓN',
-        x: 1380,
-        y: 430,
-        complexity: 1.0,
-        meta: '#ops-enterprise-alerts',
-        downstream: []
-      }
+    let FLOW_NODES = [
+      { id: 'n1', code: 'TRG-01', name: 'Webhook Entrada', type: 'Trigger HTTP', section: '01 // INGESTA', x: 170, y: 260, complexity: 1.0, meta: 'POST /v1/leads/capture', downstream: ['n2', 'n3', 'n4', 'n5', 'n6', 'n7', 'n8', 'n9'] },
+      { id: 'n2', code: 'SEC-02', name: 'Filtro Auth & PII', type: 'Guardrail / Middleware', section: '01 // INGESTA', x: 365, y: 260, complexity: 1.3, meta: 'HMAC + Regex Masking', downstream: ['n3', 'n4', 'n5', 'n6', 'n7', 'n8', 'n9'] },
+      { id: 'n3', code: 'API-03', name: 'CRM Enrich API', type: 'HTTP Request', section: '02 // ENRIQUECIMIENTO', x: 610, y: 200, complexity: 1.5, meta: 'GET api.clearbit/v2/person', downstream: ['n4', 'n5', 'n6', 'n7', 'n8', 'n9'] },
+      { id: 'n4', code: 'AI-04', name: 'Clasificador Intent IA', type: 'LLM Node (GPT-4o)', section: '02 // DECISIÓN IA', x: 610, y: 440, complexity: 1.6, meta: 'temp: 0.1 | max_tokens: 800', downstream: ['n5', 'n6', 'n7', 'n8', 'n9'] },
+      { id: 'n5', code: 'RTR-05', name: 'Router Condicional', type: 'Switch / Branch', section: '02 // DECISIÓN IA', x: 865, y: 310, complexity: 1.4, meta: 'score >= 0.85 ? VIP : STD', downstream: ['n6', 'n7', 'n8', 'n9'] },
+      { id: 'n6', code: 'DB-06', name: 'Postgres Upsert', type: 'Database Write', section: '03 // PERSISTENCIA', x: 1140, y: 210, complexity: 1.2, meta: 'ON CONFLICT (email) UPDATE', downstream: ['n8', 'n9'] },
+      { id: 'n7', code: 'DLQ-07', name: 'Cola Fallback / Retry', type: 'Dead Letter Queue', section: '03 // RESILIENCIA', x: 1140, y: 480, complexity: 1.2, meta: 'Redis Stream Retry x3', downstream: ['n9'] },
+      { id: 'n8', code: 'BIL-08', name: 'Stripe Billing Sync', type: 'External Mutation', section: '03 // PERSISTENCIA', x: 1380, y: 210, complexity: 1.5, meta: 'POST /v1/subscriptions', downstream: ['n9'] },
+      { id: 'n9', code: 'OPS-09', name: 'Alerta Slack & Audit', type: 'Notification', section: '03 // NOTIFICACIÓN', x: 1380, y: 430, complexity: 1.0, meta: '#ops-enterprise-alerts', downstream: [] }
     ];
 
-    // 3. CONEXIONES (ARISTAS) DEL GRAFO
-    const FLOW_EDGES = [
-      { from: 'n1', to: 'n2' },
-      { from: 'n2', to: 'n3' },
-      { from: 'n2', to: 'n4' },
-      { from: 'n3', to: 'n5' },
-      { from: 'n4', to: 'n5' },
-      { from: 'n5', to: 'n6' },
-      { from: 'n5', to: 'n7' },
-      { from: 'n6', to: 'n8' },
-      { from: 'n6', to: 'n9' },
-      { from: 'n7', to: 'n9' },
-      { from: 'n8', to: 'n9' }
+    let FLOW_EDGES = [
+      { from: 'n1', to: 'n2' }, { from: 'n2', to: 'n3' }, { from: 'n2', to: 'n4' },
+      { from: 'n3', to: 'n5' }, { from: 'n4', to: 'n5' }, { from: 'n5', to: 'n6' },
+      { from: 'n5', to: 'n7' }, { from: 'n6', to: 'n8' }, { from: 'n6', to: 'n9' },
+      { from: 'n7', to: 'n9' }, { from: 'n8', to: 'n9' }
     ];
 
-    // RUTA SISTEMÁTICA DE ESCANEO DE LA SONDA
-    const SCAN_SEQUENCE = ['n1', 'n2', 'n3', 'n4', 'n5', 'n6', 'n8', 'n7', 'n9'];
+    let SCAN_SEQUENCE = ['n1', 'n2', 'n3', 'n4', 'n5', 'n6', 'n8', 'n7', 'n9'];
 
-    // 4. PRESETS DE AUDITORÍA CON RAZONAMIENTO Y RECOMENDACIONES ESPECÍFICAS POR NODO
     const AUDIT_PRESETS = {
       resilience: {
         label: 'Resiliencia & Manejo de Errores',
         summary: 'Evalúa tolerancia a fallos de red, políticas de reintento, idempotencia y rutas de recuperación ante caídas externas.',
         findings: {
-          n1: {
-            status: 'ok',
-            thought: 'Verificando validación de payload entrante y respuesta 202 inmediata → Esquema JSON estricto activo.',
-            detail: 'El webhook responde en <45ms antes de procesar tareas pesadas, evitando timeouts del emisor.',
-            fix: 'Ninguna acción requerida.'
-          },
-          n2: {
-            status: 'ok',
-            thought: 'Inspeccionando comportamiento ante cabeceras malformadas → Rechazo controlado 401 sin romper el worker.',
-            detail: 'Manejo limpio de excepciones de autenticación.',
-            fix: 'Ninguna acción requerida.'
-          },
-          n3: {
-            status: 'critical',
-            thought: '¡Alerta! Llamada HTTP externa sin timeout definido ni captura de error 429/503 → Punto único de fallo.',
-            detail: 'Si CRM Enrich API tarda >30s o devuelve 502, bloquea el hilo principal y aborta todo el flujo.',
-            fix: 'Configurar timeout de 4000ms, 2 reintentos con backoff exponencial y ruta alternativa hacia Router.'
-          },
-          n4: {
-            status: 'warning',
-            thought: 'Analizando salida del LLM → Falta fallback si el modelo devuelve JSON truncado o rate-limit.',
-            detail: 'Aunque tiene structured outputs, no existe modelo secundario de respaldo ante indisponibilidad de OpenAI.',
-            fix: 'Añadir fallback automático a modelo ligero o regla heurística por palabras clave.'
-          },
-          n5: {
-            status: 'ok',
-            thought: 'Evaluando ramas del Router Condicional → Rama "default" conectada correctamente.',
-            detail: 'Todos los casos límite (null/undefined en score) tienen salida controlada.',
-            fix: 'Ninguna acción requerida.'
-          },
-          n6: {
-            status: 'ok',
-            thought: 'Verificando operación en Postgres → Uso de UPSERT idempotente por clave única (email).',
-            detail: 'Reejecutar el flujo no genera registros duplicados.',
-            fix: 'Ninguna acción requerida.'
-          },
-          n8: {
-            status: 'critical',
-            thought: '¡Riesgo Crítico! Mutación en Stripe sin Idempotency-Key → Riesgo de doble cobro en reintentos.',
-            detail: 'Si la red falla tras crear la suscripción, un reintento automático generará cargos duplicados al cliente.',
-            fix: 'Inyectar cabecera `Idempotency-Key: {{trigger.event_id}}` en la petición POST a Stripe.'
-          },
-          n7: {
-            status: 'warning',
-            thought: 'Inspeccionando Dead Letter Queue → Cola activa pero sin alerta de saturación (>50 mensajes).',
-            detail: 'Los eventos fallidos se guardan, pero nadie se entera si la cola empieza a acumularse.',
-            fix: 'Agregar umbral de monitoreo que dispare alerta si la cola supera 25 eventos pendientes.'
-          },
-          n9: {
-            status: 'ok',
-            thought: 'Validando canal de notificación final → Fallo silencioso configurado para no revertir transacciones.',
-            detail: 'Un error en Slack no afecta la persistencia previa en DB ni Stripe.',
-            fix: 'Ninguna acción requerida.'
-          }
+          n1: { status: 'ok', thought: 'Verificando validación de payload entrante y respuesta 202 inmediata → Esquema JSON estricto activo.', detail: 'El webhook responde en <45ms antes de procesar tareas pesadas.', fix: 'Ninguna acción requerida.' },
+          n2: { status: 'ok', thought: 'Inspeccionando comportamiento ante cabeceras malformadas → Rechazo controlado 401 sin romper el worker.', detail: 'Manejo limpio de excepciones de autenticación.', fix: 'Ninguna acción requerida.' },
+          n3: { status: 'critical', ruleId: 'RES-HTTP-RETRY', thought: '¡Alerta! Llamada HTTP externa sin timeout definido ni captura de error 429/503 → Punto único de fallo.', detail: 'Si CRM Enrich API tarda >30s o devuelve 502, bloquea el hilo principal y aborta todo el flujo.', fix: 'Configurar timeout de 4000ms, 2 reintentos con backoff exponencial y ruta alternativa.' },
+          n4: { status: 'warning', ruleId: 'RES-LLM-FALLBACK', thought: 'Analizando salida del LLM → Falta fallback si el modelo devuelve JSON truncado o rate-limit.', detail: 'No existe modelo secundario de respaldo ante indisponibilidad de OpenAI.', fix: 'Añadir fallback automático a modelo ligero o regla heurística.' },
+          n5: { status: 'ok', thought: 'Evaluando ramas del Router Condicional → Rama "default" conectada correctamente.', detail: 'Todos los casos límite (null/undefined en score) tienen salida controlada.', fix: 'Ninguna acción requerida.' },
+          n6: { status: 'ok', thought: 'Verificando operación en Postgres → Uso de UPSERT idempotente por clave única (email).', detail: 'Reejecutar el flujo no genera registros duplicados.', fix: 'Ninguna acción requerida.' },
+          n8: { status: 'critical', ruleId: 'RES-IDEMPOTENCY', thought: '¡Riesgo Crítico! Mutación en Stripe sin Idempotency-Key → Riesgo de doble cobro en reintentos.', detail: 'Si la red falla tras crear la suscripción, un reintento generará cargos duplicados.', fix: 'Inyectar cabecera Idempotency-Key derivada del ID de evento del Trigger.' },
+          n7: { status: 'warning', ruleId: 'RES-DLQ-ALERT', thought: 'Inspeccionando Dead Letter Queue → Cola activa pero sin alerta de saturación (>50 mensajes).', detail: 'Los eventos fallidos se guardan, pero nadie se entera si la cola se acumula.', fix: 'Agregar umbral de monitoreo que dispare alerta si la cola supera 25 eventos.' },
+          n9: { status: 'ok', thought: 'Validando canal de notificación final → Fallo silencioso configurado para no revertir transacciones.', detail: 'Un error en Slack no afecta la persistencia previa.', fix: 'Ninguna acción requerida.' }
         }
       },
-
       security: {
         label: 'Seguridad, Permisos & PII',
         summary: 'Audita exposición de datos personales (PII), secretos hardcodeados, firmas de webhook y retención en logs.',
         findings: {
-          n1: {
-            status: 'warning',
-            thought: 'Revisando autenticación del Webhook → Token por query param detectado en lugar de firma HMAC.',
-            detail: 'Los tokens en URL quedan registrados en logs de proxies y balanceadores de carga.',
-            fix: 'Migrar autenticación a firma criptográfica HMAC-SHA256 en cabecera `X-Signature`.'
-          },
-          n2: {
-            status: 'ok',
-            thought: 'Validando enmascaramiento PII → Campos teléfono y documento se tokenizan antes de salir de Ingreso.',
-            detail: 'Cumple con principio de minimización de datos para nodos posteriores.',
-            fix: 'Ninguna acción requerida.'
-          },
-          n3: {
-            status: 'ok',
-            thought: 'Inspeccionando credenciales de CRM Enrich API → API Key inyectada vía Vault de secretos.',
-            detail: 'No se detectan credenciales en texto plano en la definición del nodo.',
-            fix: 'Ninguna acción requerida.'
-          },
-          n4: {
-            status: 'critical',
-            thought: '¡Exposición PII! Se envía el correo y cuerpo completo del usuario al LLM externo sin redacción.',
-            detail: 'Datos personales identificables viajan a un proveedor de IA de terceros sin anonimizar.',
-            fix: 'Aplicar scrub de entidades PII (emails, nombres propios) antes de construir el prompt.'
-          },
-          n5: {
-            status: 'ok',
-            thought: 'Verificando reglas de enrutamiento → Evalúa únicamente scores numéricos internos.',
-            detail: 'Sin exposición de metadatos sensibles en condiciones.',
-            fix: 'Ninguna acción requerida.'
-          },
-          n6: {
-            status: 'ok',
-            thought: 'Auditando conexión a Postgres → TLS 1.3 forzado y rol con privilegios mínimos (solo INSERT/UPDATE).',
-            detail: 'El usuario de base de datos no tiene permisos DROP ni lectura sobre tablas de administración.',
-            fix: 'Ninguna acción requerida.'
-          },
-          n8: {
-            status: 'ok',
-            thought: 'Verificando integración Stripe → Uso de tokens restringidos sin manipulación de tarjetas crudas.',
-            detail: 'Alcance PCI-DSS correctamente delegado.',
-            fix: 'Ninguna acción requerida.'
-          },
-          n7: {
-            status: 'warning',
-            thought: 'Revisando retención de Cola Fallback → Payloads fallidos persisten sin TTL ni cifrado adicional.',
-            detail: 'Los mensajes en Redis DLQ permanecen indefinidamente en memoria.',
-            fix: 'Establecer TTL máximo de 72 horas y purga automática tras reprocesamiento.'
-          },
-          n9: {
-            status: 'critical',
-            thought: '¡Fuga en Notificación! El mensaje a Slack imprime el payload JSON crudo incluyendo email y plan.',
-            detail: 'Información confidencial del cliente queda visible en un canal compartido de mensajería.',
-            fix: 'Formatear mensaje solo con ID interno de usuario y enlace al panel autenticado.'
-          }
+          n1: { status: 'warning', ruleId: 'SEC-HMAC-AUTH', thought: 'Revisando autenticación del Webhook → Token por query param detectado en lugar de firma HMAC.', detail: 'Los tokens en URL quedan registrados en logs de proxies.', fix: 'Migrar autenticación a firma criptográfica HMAC-SHA256 en cabecera X-Signature.' },
+          n2: { status: 'ok', thought: 'Validando enmascaramiento PII → Campos teléfono y documento se tokenizan antes de salir de Ingreso.', detail: 'Cumple con principio de minimización de datos.', fix: 'Ninguna acción requerida.' },
+          n3: { status: 'ok', thought: 'Inspeccionando credenciales de CRM Enrich API → API Key inyectada vía Vault de secretos.', detail: 'No se detectan credenciales en texto plano.', fix: 'Ninguna acción requerida.' },
+          n4: { status: 'critical', ruleId: 'SEC-PII-SCRUB', thought: '¡Exposición PII! Se envía el correo y cuerpo completo del usuario al LLM externo sin redacción.', detail: 'Datos personales identificables viajan a un proveedor de IA sin anonimizar.', fix: 'Aplicar scrub de entidades PII (emails, nombres) antes de construir el prompt.' },
+          n5: { status: 'ok', thought: 'Verificando reglas de enrutamiento → Evalúa únicamente scores numéricos internos.', detail: 'Sin exposición de metadatos sensibles en condiciones.', fix: 'Ninguna acción requerida.' },
+          n6: { status: 'ok', thought: 'Auditando conexión a Postgres → TLS 1.3 forzado y rol con privilegios mínimos.', detail: 'El usuario de base de datos no tiene permisos DROP.', fix: 'Ninguna acción requerida.' },
+          n8: { status: 'ok', thought: 'Verificando integración Stripe → Uso de tokens restringidos sin manipulación de tarjetas crudas.', detail: 'Alcance PCI-DSS correctamente delegado.', fix: 'Ninguna acción requerida.' },
+          n7: { status: 'warning', ruleId: 'SEC-DLQ-TTL', thought: 'Revisando retención de Cola Fallback → Payloads fallidos persisten sin TTL ni cifrado adicional.', detail: 'Los mensajes en Redis DLQ permanecen indefinidamente en memoria.', fix: 'Establecer TTL máximo de 72 horas y purga automática.' },
+          n9: { status: 'critical', ruleId: 'SEC-LOG-REDACT', thought: '¡Fuga en Notificación! El mensaje a Slack imprime el payload JSON crudo incluyendo email y plan.', detail: 'Información confidencial del cliente queda visible en un canal compartido.', fix: 'Formatear mensaje solo con ID interno de usuario y enlace autenticado.' }
         }
       },
-
       performance: {
         label: 'Rendimiento & Costo de API',
         summary: 'Detecta cuellos de botella de latencia, llamadas redundantes, gasto excesivo de tokens LLM y paralelización.',
         findings: {
-          n1: {
-            status: 'ok',
-            thought: 'Midiendo latencia de recepción → Parsing ligero en 12ms.',
-            detail: 'Sin bloqueos de I/O en la entrada.',
-            fix: 'Ninguna acción requerida.'
-          },
-          n2: {
-            status: 'ok',
-            thought: 'Evaluando expresiones Regex de filtrado → Ejecución local en memoria <3ms.',
-            detail: 'Costo computacional despreciable.',
-            fix: 'Ninguna acción requerida.'
-          },
-          n3: {
-            status: 'warning',
-            thought: 'Analizando frecuencia de consulta CRM → Sin caché para dominios corporativos repetidos.',
-            detail: 'El 38% de las llamadas consultan empresas ya enriquecidas en las últimas 24 horas.',
-            fix: 'Implementar caché Redis con TTL de 24h por dominio; ahorra ~38% de créditos API.'
-          },
-          n4: {
-            status: 'critical',
-            thought: '¡Sobrecosto LLM! Uso de modelo frontier pesado para una clasificación binaria simple.',
-            detail: 'Latencia media de 2.4s por lead y costo 15x superior al necesario para clasificar intención.',
-            fix: 'Cambiar a modelo rápido/mini (ej. GPT-4o-mini / Flash) reduciendo latencia a 320ms y costo en 92%.'
-          },
-          n5: {
-            status: 'ok',
-            thought: 'Inspeccionando evaluación condicional → Ramificación instantánea O(1).',
-            detail: 'Sin impacto en el tiempo total de ejecución.',
-            fix: 'Ninguna acción requerida.'
-          },
-          n6: {
-            status: 'ok',
-            thought: 'Verificando índices de Postgres → Índice compuesto en `email` permite Upsert en 6ms.',
-            detail: 'Rendimiento óptimo de escritura.',
-            fix: 'Ninguna acción requerida.'
-          },
-          n8: {
-            status: 'warning',
-            thought: 'Detectando ejecución secuencial → Stripe Sync espera a Postgres Upsert pudiendo ejecutarse en paralelo.',
-            detail: 'Añade +480ms innecesarios a la ruta crítica VIP.',
-            fix: 'Ejecutar DB Upsert y Stripe Sync en ramas paralelas tras el Router.'
-          },
-          n7: {
-            status: 'ok',
-            thought: 'Verificando carga en Cola Fallback → Solo se activa bajo excepción (<1.2% del tráfico).',
-            detail: 'No consume recursos en el flujo nominal.',
-            fix: 'Ninguna acción requerida.'
-          },
-          n9: {
-            status: 'ok',
-            thought: 'Midiendo disparo de webhook Slack → Ejecución asíncrona fire-and-forget.',
-            detail: 'No bloquea el cierre del flujo.',
-            fix: 'Ninguna acción requerida.'
-          }
+          n1: { status: 'ok', thought: 'Midiendo latencia de recepción → Parsing ligero en 12ms.', detail: 'Sin bloqueos de I/O en la entrada.', fix: 'Ninguna acción requerida.' },
+          n2: { status: 'ok', thought: 'Evaluando expresiones Regex de filtrado → Ejecución local en memoria <3ms.', detail: 'Costo computacional despreciable.', fix: 'Ninguna acción requerida.' },
+          n3: { status: 'warning', ruleId: 'PERF-API-CACHE', thought: 'Analizando frecuencia de consulta CRM → Sin caché para dominios corporativos repetidos.', detail: 'El 38% de las llamadas consultan empresas ya enriquecidas en las últimas 24h.', fix: 'Implementar caché Redis con TTL de 24h por dominio.' },
+          n4: { status: 'critical', ruleId: 'PERF-LLM-TIER', thought: '¡Sobrecosto LLM! Uso de modelo frontier pesado para una clasificación binaria simple.', detail: 'Latencia media de 2.4s por lead y costo 15x superior al necesario.', fix: 'Cambiar a modelo rápido/mini (ej. GPT-4o-mini / Flash) reduciendo costo en 92%.' },
+          n5: { status: 'ok', thought: 'Inspeccionando evaluación condicional → Ramificación instantánea O(1).', detail: 'Sin impacto en el tiempo total de ejecución.', fix: 'Ninguna acción requerida.' },
+          n6: { status: 'ok', thought: 'Verificando índices de Postgres → Índice compuesto en email permite Upsert en 6ms.', detail: 'Rendimiento óptimo de escritura.', fix: 'Ninguna acción requerida.' },
+          n8: { status: 'warning', ruleId: 'PERF-PARALLEL', thought: 'Detectando ejecución secuencial → Stripe Sync espera a Postgres Upsert pudiendo ejecutarse en paralelo.', detail: 'Añade +480ms innecesarios a la ruta crítica VIP.', fix: 'Ejecutar DB Upsert y Stripe Sync en ramas paralelas tras el Router.' },
+          n7: { status: 'ok', thought: 'Verificando carga en Cola Fallback → Solo se activa bajo excepción (<1.2% del tráfico).', detail: 'No consume recursos en el flujo nominal.', fix: 'Ninguna acción requerida.' },
+          n9: { status: 'ok', thought: 'Midiendo disparo de webhook Slack → Ejecución asíncrona fire-and-forget.', detail: 'No bloquea el cierre del flujo.', fix: 'Ninguna acción requerida.' }
         }
       }
     };
 
     // ============================================================================
-    // ESTADO DE LA APLICACIÓN
+    // ESTADO DE LA APLICACIÓN + CONFIGURACIÓN HÍBRIDA & HISTORIAL
     // ============================================================================
+    const HISTORY_STORAGE_KEY = 'sofs_audit_history_v1';
+
     const state = {
       presetKey: 'resilience',
       isScanning: false,
       isComplete: false,
-      speedMultiplier: 1, // 1, 2.2, o 'instant'
+      speedMultiplier: 1,
       cameraFollow: true,
       selectedNodeId: null,
-      auditedResults: {}, // nodeId -> finding
-      activeTab: 'stream', // 'stream' | 'report'
-      // Transformación de la bóveda (Pan & Zoom)
+      auditedResults: {},
+      activeTab: 'stream',
       pan: { x: 0, y: 0 },
       zoom: 0.88,
       isDragging: false,
       dragStart: { x: 0, y: 0 },
-      // Posición actual de la sonda
       probePos: { x: 170, y: 260 },
       trailPoints: [],
-      scanRunId: 0
+      scanRunId: 0,
+      // Configuración del Motor Híbrido (Reglas + LLM opcional en sesión)
+      hybridProvider: 'local',
+      hybridApiKey: ''
     };
 
-    // Referencias DOM
     const els = {
       vaultViewport: document.getElementById('vaultViewport'),
       vaultWorld: document.getElementById('vaultWorld'),
@@ -755,6 +649,7 @@
       activePresetTitle: document.getElementById('activePresetTitle'),
       scoreArc: document.getElementById('scoreArc'),
       healthScoreText: document.getElementById('healthScoreText'),
+      scoreDeltaBadge: document.getElementById('scoreDeltaBadge'),
       flowVerdictText: document.getElementById('flowVerdictText'),
       scanProgressText: document.getElementById('scanProgressText'),
       countOk: document.getElementById('countOk'),
@@ -765,15 +660,18 @@
       emptyStreamState: document.getElementById('emptyStreamState'),
       streamView: document.getElementById('streamView'),
       reportView: document.getElementById('reportView'),
+      historyView: document.getElementById('historyView'),
       reportContent: document.getElementById('reportContent'),
+      historyListContainer: document.getElementById('historyListContainer'),
+      historyCountBadge: document.getElementById('historyCountBadge'),
       tabStreamBtn: document.getElementById('tabStreamBtn'),
       tabReportBtn: document.getElementById('tabReportBtn'),
+      tabHistoryBtn: document.getElementById('tabHistoryBtn'),
       reportReadyDot: document.getElementById('reportReadyDot'),
       reportSidebar: document.getElementById('reportSidebar'),
       mobileScoreBadge: document.getElementById('mobileScoreBadge')
     };
 
-    // Paleta semántica por estado
     const STATUS_COLORS = {
       scanning: { hex: '#22d3ee', bg: 'rgba(34,211,238,0.12)', border: 'border-cyan-400', text: 'text-cyan-400', badge: 'ESCANEANDO' },
       ok:       { hex: '#34d399', bg: 'rgba(52,211,153,0.12)', border: 'border-emerald-400/70', text: 'text-emerald-400', badge: 'ÓPTIMO' },
@@ -782,7 +680,7 @@
     };
 
     // ============================================================================
-    // RENDERIZADO INICIAL DE LA BÓVEDA (SECCIONES, ARISTAS Y NODOS)
+    // RENDERIZADO DE LA BÓVEDA
     // ============================================================================
     function initVault() {
       renderSections();
@@ -790,6 +688,7 @@
       renderNodes();
       fitVaultToViewport();
       updatePresetHeader();
+      renderHistoryList();
     }
 
     function renderSections() {
@@ -805,17 +704,14 @@
 
     function getEdgePath(fromNode, toNode) {
       const dx = Math.abs(toNode.x - fromNode.x) * 0.52;
-      const c1x = fromNode.x + dx;
-      const c1y = fromNode.y;
-      const c2x = toNode.x - dx;
-      const c2y = toNode.y;
-      return `M ${fromNode.x} ${fromNode.y} C ${c1x} ${c1y}, ${c2x} ${c2y}, ${toNode.x} ${toNode.y}`;
+      return `M ${fromNode.x} ${fromNode.y} C ${fromNode.x + dx} ${fromNode.y}, ${toNode.x - dx} ${toNode.y}, ${toNode.x} ${toNode.y}`;
     }
 
     function renderEdges() {
-      els.edgesGroup.innerHTML = FLOW_EDGES.map((edge, idx) => {
+      els.edgesGroup.innerHTML = FLOW_EDGES.map(edge => {
         const from = FLOW_NODES.find(n => n.id === edge.from);
         const to = FLOW_NODES.find(n => n.id === edge.to);
+        if (!from || !to) return '';
         const d = getEdgePath(from, to);
         return `
           <g id="edge-${edge.from}-${edge.to}">
@@ -841,18 +737,16 @@
         </div>
       `).join('');
 
-      // Evento click en cada nodo para inspeccionar su detalle
       document.querySelectorAll('.vault-node').forEach(card => {
         card.addEventListener('click', (e) => {
           e.stopPropagation();
-          const nodeId = card.getAttribute('data-node-id');
-          selectNodeForInspection(nodeId);
+          selectNodeForInspection(card.getAttribute('data-node-id'));
         });
       });
     }
 
     // ============================================================================
-    // CONTROL DE CÁMARA (PAN, ZOOM & AUTO-SEGUIMIENTO)
+    // CÁMARA (PAN, ZOOM & AUTO-SEGUIMIENTO)
     // ============================================================================
     function applyVaultTransform(smooth = false) {
       els.vaultWorld.style.transition = smooth ? 'transform 0.45s cubic-bezier(0.22, 1, 0.36, 1)' : 'none';
@@ -873,22 +767,17 @@
     function focusCameraOnPoint(worldX, worldY, smooth = true) {
       if (!state.cameraFollow) return;
       const rect = els.vaultViewport.getBoundingClientRect();
-      const targetZoom = Math.max(state.zoom, 0.92);
-      state.zoom = targetZoom;
+      state.zoom = Math.max(state.zoom, 0.92);
       state.pan.x = rect.width / 2 - worldX * state.zoom;
       state.pan.y = rect.height / 2 - worldY * state.zoom;
       applyVaultTransform(smooth);
     }
 
-    // Pan con ratón / touch
     els.vaultViewport.addEventListener('mousedown', (e) => {
       if (e.target.closest('.vault-node')) return;
       state.isDragging = true;
       state.dragStart = { x: e.clientX - state.pan.x, y: e.clientY - state.pan.y };
-      // Si el usuario toma control manual mientras escanea, desactivamos auto-cámara suavemente
-      if (state.isScanning && state.cameraFollow) {
-        setCameraFollow(false);
-      }
+      if (state.isScanning && state.cameraFollow) setCameraFollow(false);
     });
 
     window.addEventListener('mousemove', (e) => {
@@ -896,56 +785,29 @@
       const wx = Math.round((e.clientX - rect.left - state.pan.x) / state.zoom);
       const wy = Math.round((e.clientY - rect.top - state.pan.y) / state.zoom);
       els.coordsDisplay.textContent = `X: ${String(wx).padStart(3, '0')} Y: ${String(wy).padStart(3, '0')}`;
-
       if (!state.isDragging) return;
       state.pan.x = e.clientX - state.dragStart.x;
       state.pan.y = e.clientY - state.dragStart.y;
       applyVaultTransform(false);
     });
 
-    window.addEventListener('mouseup', () => {
-      state.isDragging = false;
-    });
+    window.addEventListener('mouseup', () => { state.isDragging = false; });
 
-    // Zoom con rueda del ratón
     els.vaultViewport.addEventListener('wheel', (e) => {
       e.preventDefault();
       const rect = els.vaultViewport.getBoundingClientRect();
       const mouseX = e.clientX - rect.left;
       const mouseY = e.clientY - rect.top;
-
       const delta = e.deltaY < 0 ? 1.1 : 0.9;
       const newZoom = Math.min(1.6, Math.max(0.4, state.zoom * delta));
-
       state.pan.x = mouseX - (mouseX - state.pan.x) * (newZoom / state.zoom);
       state.pan.y = mouseY - (mouseY - state.pan.y) * (newZoom / state.zoom);
       state.zoom = newZoom;
       applyVaultTransform(false);
     }, { passive: false });
 
-    // Touch drag básico para dispositivos móviles
-    let lastTouch = null;
-    els.vaultViewport.addEventListener('touchstart', (e) => {
-      if (e.touches.length === 1 && !e.target.closest('.vault-node')) {
-        lastTouch = { x: e.touches[0].clientX, y: e.touches[0].clientY };
-      }
-    }, { passive: true });
-
-    els.vaultViewport.addEventListener('touchmove', (e) => {
-      if (e.touches.length === 1 && lastTouch) {
-        const dx = e.touches[0].clientX - lastTouch.x;
-        const dy = e.touches[0].clientY - lastTouch.y;
-        state.pan.x += dx;
-        state.pan.y += dy;
-        lastTouch = { x: e.touches[0].clientX, y: e.touches[0].clientY };
-        applyVaultTransform(false);
-      }
-    }, { passive: true });
-
-    els.vaultViewport.addEventListener('touchend', () => { lastTouch = null; });
-
     // ============================================================================
-    // COREOGRAFÍA DE LA SONDA / ARTEFACTO DE ESCANEO
+    // SONDA DE ESCANEO
     // ============================================================================
     function setProbeAppearance(statusKey, isActivelyInspecting = false) {
       const color = STATUS_COLORS[statusKey]?.hex || '#22d3ee';
@@ -954,19 +816,12 @@
       document.getElementById('probeCrosshair').setAttribute('stroke', color);
       document.getElementById('probeCore').setAttribute('fill', color);
       document.getElementById('probeAura').setAttribute('fill', STATUS_COLORS[statusKey]?.bg || 'rgba(34,211,238,0.1)');
-
-      if (isActivelyInspecting) {
-        els.scannerProbe.classList.add('probe-scanning');
-      } else {
-        els.scannerProbe.classList.remove('probe-scanning');
-      }
+      els.scannerProbe.classList.toggle('probe-scanning', isActivelyInspecting);
     }
 
     function positionProbe(x, y) {
       state.probePos = { x, y };
       els.scannerProbe.setAttribute('transform', `translate(${x}, ${y})`);
-
-      // Posicionar tarjeta flotante contextual sin salirse del lienzo
       const calloutX = x > 1150 ? x - 310 : x + 36;
       const calloutY = y > 460 ? y - 125 : y - 35;
       els.probeCallout.style.left = `${calloutX}px`;
@@ -975,7 +830,6 @@
 
     function triggerAnomalyRipple(node, statusKey) {
       const color = STATUS_COLORS[statusKey].hex;
-      // Onda en el nodo afectado
       const circle = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
       circle.setAttribute('cx', node.x);
       circle.setAttribute('cy', node.y);
@@ -987,32 +841,23 @@
       els.ripplesGroup.appendChild(circle);
       setTimeout(() => circle.remove(), 1300);
 
-      // Resaltar brevemente nodos dependientes aguas abajo (impacto en cascada)
-      node.downstream.forEach(downId => {
+      (node.downstream || []).forEach(downId => {
         const downCard = document.getElementById(`node-card-${downId}`);
         if (downCard && !state.auditedResults[downId]) {
           downCard.style.boxShadow = `0 0 0 1px ${color}66, 0 0 18px ${color}25`;
-          setTimeout(() => {
-            if (!state.auditedResults[downId]) downCard.style.boxShadow = '';
-          }, 950);
+          setTimeout(() => { if (!state.auditedResults[downId]) downCard.style.boxShadow = ''; }, 950);
         }
       });
     }
 
-    // Interpolación cúbica Bezier para mover la sonda siguiendo exactamente las líneas
     function cubicBezierPoint(t, p0, p1, p2, p3) {
-      const u = 1 - t;
-      const tt = t * t;
-      const uu = u * u;
-      const uuu = uu * u;
-      const ttt = tt * t;
+      const u = 1 - t, tt = t * t, uu = u * u;
       return {
-        x: uuu * p0.x + 3 * uu * t * p1.x + 3 * u * tt * p2.x + ttt * p3.x,
-        y: uuu * p0.y + 3 * uu * t * p1.y + 3 * u * tt * p2.y + ttt * p3.y
+        x: uu * u * p0.x + 3 * uu * t * p1.x + 3 * u * tt * p2.x + tt * t * p3.x,
+        y: uu * u * p0.y + 3 * uu * t * p1.y + 3 * u * tt * p2.y + tt * t * p3.y
       };
     }
 
-    // Easing con inercia: acelera en el tramo y desacelera suavemente al aproximarse al nodo
     function easeInOutCubic(t) {
       return t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
     }
@@ -1023,48 +868,33 @@
           positionProbe(toNode.x, toNode.y);
           state.trailPoints.push(`${toNode.x},${toNode.y}`);
           els.probeTrail.setAttribute('d', `M ${state.trailPoints.join(' L ')}`);
-          resolve();
-          return;
+          return resolve();
         }
-
         const dx = Math.abs(toNode.x - fromNode.x) * 0.52;
         const p0 = { x: fromNode.x, y: fromNode.y };
         const p1 = { x: fromNode.x + dx, y: fromNode.y };
         const p2 = { x: toNode.x - dx, y: toNode.y };
         const p3 = { x: toNode.x, y: toNode.y };
 
-        // Si no hay arista directa (ej. salto de rama tras completar una bifurcación), arco suave
         const hasDirectEdge = FLOW_EDGES.some(e => e.from === fromNode.id && e.to === toNode.id);
         if (!hasDirectEdge) {
-          p1.x = fromNode.x;
-          p1.y = (fromNode.y + toNode.y) / 2;
-          p2.x = toNode.x;
-          p2.y = (fromNode.y + toNode.y) / 2;
+          p1.x = fromNode.x; p1.y = (fromNode.y + toNode.y) / 2;
+          p2.x = toNode.x;   p2.y = (fromNode.y + toNode.y) / 2;
         }
 
-        const baseDuration = 680 * toNode.complexity;
-        const duration = baseDuration / state.speedMultiplier;
+        const duration = (640 * (toNode.complexity || 1.2)) / state.speedMultiplier;
         const startTime = performance.now();
 
         function step(now) {
           if (runId !== state.scanRunId) return resolve();
           const rawT = Math.min(1, (now - startTime) / duration);
-          const easedT = easeInOutCubic(rawT);
-          const pt = cubicBezierPoint(easedT, p0, p1, p2, p3);
-
+          const pt = cubicBezierPoint(easeInOutCubic(rawT), p0, p1, p2, p3);
           positionProbe(pt.x, pt.y);
           state.trailPoints.push(`${pt.x.toFixed(1)},${pt.y.toFixed(1)}`);
           els.probeTrail.setAttribute('d', `M ${state.trailPoints.join(' L ')}`);
-
-          if (state.cameraFollow && rawT > 0.15) {
-            focusCameraOnPoint(pt.x, pt.y, false);
-          }
-
-          if (rawT < 1) {
-            requestAnimationFrame(step);
-          } else {
-            resolve();
-          }
+          if (state.cameraFollow && rawT > 0.15) focusCameraOnPoint(pt.x, pt.y, false);
+          if (rawT < 1) requestAnimationFrame(step);
+          else resolve();
         }
         requestAnimationFrame(step);
       });
@@ -1073,6 +903,241 @@
     function sleep(ms, runId) {
       if (state.speedMultiplier === 'instant' || runId !== state.scanRunId) return Promise.resolve();
       return new Promise(res => setTimeout(res, ms / state.speedMultiplier));
+    }
+
+    // ============================================================================
+    // MOTOR HÍBRIDO DE REGLAS + LLM PARA PARCHES AUTOMÁTICOS (AUTO-PATCH)
+    // ============================================================================
+    function buildDeterministicPatch(node, finding, engine) {
+      const rule = finding.ruleId || 'GENERIC-FIX';
+      const isMake = engine.toLowerCase() === 'make';
+
+      const templates = {
+        'RES-HTTP-RETRY': isMake
+          ? {
+              module: node.type,
+              metadata: { designer: { name: `${node.name} (Hardened)` } },
+              onerror: [{ directive: 'break', maxRetries: 3, retryInterval: 5 }],
+              parameters: { timeout: 5000, parseResponse: true }
+            }
+          : {
+              name: node.name,
+              type: node.type,
+              retryOnFail: true,
+              maxTries: 3,
+              waitBetweenTries: 2000,
+              onError: 'continueErrorOutput',
+              parameters: { options: { timeout: 5000 } }
+            },
+        'RES-IDEMPOTENCY': {
+          name: node.name,
+          type: node.type,
+          parameters: {
+            sendHeaders: true,
+            headerParameters: {
+              parameters: [
+                { name: 'Idempotency-Key', value: '={{ $json.event_id || $execution.id }}' }
+              ]
+            }
+          }
+        },
+        'RES-LLM-FALLBACK': {
+          name: `${node.name} + Fallback`,
+          type: node.type,
+          retryOnFail: true,
+          maxTries: 2,
+          onError: 'continueErrorOutput',
+          parameters: {
+            options: { timeout: 8000, responseFormat: 'json_object' }
+          }
+        },
+        'SEC-HMAC-AUTH': {
+          name: `${node.name} (HMAC Verified)`,
+          type: node.type,
+          parameters: {
+            authentication: 'headerAuth',
+            options: { rawBody: true }
+          }
+        },
+        'SEC-PII-SCRUB': {
+          name: 'Sanitizador PII Pre-LLM (SoFs Guardrail)',
+          type: isMake ? 'regexp:Replace' : 'n8n-nodes-base.code',
+          parameters: {
+            jsCode: `// SoFs Auto-Patch: Redacción de PII antes de enviar al LLM\nconst cleanText = ($json.body || '').replace(/[\\w.-]+@[\\w.-]+\\.\\w+/g, '[EMAIL_REDACTED]');\nreturn [{ json: { ...$json, sanitized_input: cleanText, email: '[REDACTED]' } }];`
+          }
+        },
+        'SEC-LOG-REDACT': {
+          name: `${node.name} (Minimized Payload)`,
+          type: node.type,
+          parameters: {
+            text: '=Evento auditado #{{ $json.internal_id }} · Estado: {{ $json.status }} (PII omitido por política SoFs)'
+          }
+        },
+        'PERF-LLM-TIER': {
+          name: node.name,
+          type: node.type,
+          parameters: {
+            model: 'gpt-4o-mini',
+            options: { temperature: 0.1, maxTokens: 400 }
+          }
+        },
+        'PERF-API-CACHE': {
+          name: 'Redis Cache Lookup (TTL 24h)',
+          type: isMake ? 'redis:Get' : 'n8n-nodes-base.redis',
+          parameters: {
+            operation: 'get',
+            key: '=enrich_domain_{{ $json.domain }}',
+            ttl: 86400
+          }
+        }
+      };
+
+      return templates[rule] || {
+        node: node.name,
+        engine,
+        sofs_recommendation: finding.fix,
+        patched_options: { retryOnFail: true, timeout: 5000 }
+      };
+    }
+
+    async function openAutoPatchModal(nodeId) {
+      const node = FLOW_NODES.find(n => n.id === nodeId);
+      const finding = state.auditedResults[nodeId];
+      if (!node || !finding) return;
+
+      const modal = document.getElementById('patchViewerModal');
+      const titleEl = document.getElementById('patchModalTitle');
+      const engineTag = document.getElementById('patchEngineTag');
+      const rationaleEl = document.getElementById('patchRationaleText');
+      const codeEl = document.getElementById('patchCodeOutput');
+      const sourceBadge = document.getElementById('patchSourceBadge');
+
+      titleEl.textContent = `Parche para ${node.code} · ${node.name}`;
+      engineTag.textContent = `Target: ${activeEngineBadge}`;
+      rationaleEl.textContent = `${finding.detail} → ${finding.fix}`;
+      modal.classList.remove('hidden');
+
+      // 1. Generar parche base determinista por reglas
+      const basePatch = buildDeterministicPatch(node, finding, activeEngineBadge);
+      codeEl.textContent = JSON.stringify(basePatch, null, 2);
+      sourceBadge.textContent = 'Generado por: Motor de Reglas Deterministas SoFs';
+
+      // 2. Si el usuario configuró una API Key LLM en sesión, enriquecer el parche dinámicamente
+      if (state.hybridProvider !== 'local' && state.hybridApiKey) {
+        sourceBadge.textContent = 'Sintetizando parche contextual con LLM...';
+        try {
+          const endpoint = state.hybridProvider === 'openrouter'
+            ? 'https://openrouter.ai/api/v1/chat/completions'
+            : 'https://api.openai.com/v1/chat/completions';
+          const model = state.hybridProvider === 'openrouter' ? 'anthropic/claude-3.5-sonnet' : 'gpt-4o-mini';
+
+          const resp = await fetch(endpoint, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${state.hybridApiKey}`
+            },
+            body: JSON.stringify({
+              model,
+              temperature: 0.1,
+              messages: [
+                { role: 'system', content: 'Eres el motor híbrido de parches de State of Flows (SoFs). Devuelve ÚNICAMENTE un bloque JSON válido con la configuración corregida para el nodo indicado.' },
+                { role: 'user', content: `Motor: ${activeEngineBadge}\nNodo: ${JSON.stringify(node._raw || node)}\nHallazgo: ${finding.detail}\nSolución requerida: ${finding.fix}\nBase sugerida: ${JSON.stringify(basePatch)}` }
+              ]
+            })
+          });
+          const data = await resp.json();
+          const content = data.choices?.[0]?.message?.content;
+          if (content) {
+            const cleaned = content.replace(/```json|```/g, '').trim();
+            codeEl.textContent = cleaned;
+            sourceBadge.textContent = `Generado por: Motor Híbrido (Reglas + ${model})`;
+          }
+        } catch (err) {
+          sourceBadge.textContent = 'Fallback a Reglas Deterministas (Error de red/API Key)';
+        }
+      }
+    }
+
+    // ============================================================================
+    // HISTORIAL DE AUDITORÍAS PERSISTENTE (LOCALSTORAGE + DIFF DE SALUD)
+    // ============================================================================
+    function loadAuditHistory() {
+      try {
+        return JSON.parse(localStorage.getItem(HISTORY_STORAGE_KEY) || '[]');
+      } catch {
+        return [];
+      }
+    }
+
+    function saveAuditToHistory(score, verdict, counts) {
+      const history = loadAuditHistory();
+      const prevSameFlow = history.find(h => h.flowName === activeFlowName && h.presetKey === state.presetKey);
+      const delta = prevSameFlow ? score - prevSameFlow.score : null;
+
+      const record = {
+        id: `aud_${Date.now()}`,
+        timestamp: new Date().toLocaleString('es-MX', { dateStyle: 'short', timeStyle: 'short' }),
+        flowName: activeFlowName,
+        engine: activeEngineBadge,
+        presetKey: state.presetKey,
+        presetLabel: AUDIT_PRESETS[state.presetKey].label,
+        score,
+        delta,
+        verdict,
+        counts,
+        snapshot: {
+          sections: VAULT_SECTIONS,
+          nodes: FLOW_NODES,
+          edges: FLOW_EDGES,
+          sequence: SCAN_SEQUENCE,
+          findings: AUDIT_PRESETS[state.presetKey].findings
+        }
+      };
+
+      history.unshift(record);
+      const trimmed = history.slice(0, 25);
+      localStorage.setItem(HISTORY_STORAGE_KEY, JSON.stringify(trimmed));
+      renderHistoryList();
+      return delta;
+    }
+
+    function renderHistoryList() {
+      const history = loadAuditHistory();
+      els.historyCountBadge.textContent = history.length;
+
+      if (history.length === 0) {
+        els.historyListContainer.innerHTML = `
+          <div class="text-center py-10 px-4 border border-dashed border-slate-800 rounded-xl text-xs text-slate-400">
+            Aún no hay auditorías guardadas. Ejecuta un escaneo para registrar el estado del flow y comparar mejoras en el tiempo.
+          </div>
+        `;
+        return;
+      }
+
+      els.historyListContainer.innerHTML = history.map(item => {
+        const scoreColor = item.score >= 80 ? 'text-emerald-400' : item.score >= 55 ? 'text-amber-400' : 'text-rose-400';
+        const deltaHtml = item.delta !== null && item.delta !== 0
+          ? `<span class="font-mono text-[10px] px-1.5 py-0.5 rounded ${item.delta > 0 ? 'bg-emerald-500/15 text-emerald-300' : 'bg-rose-500/15 text-rose-300'}">${item.delta > 0 ? '+' : ''}${item.delta} pts</span>`
+          : '';
+
+        return `
+          <div class="rounded-xl bg-obsidian-900 border border-slate-800 hover:border-slate-700 p-3 space-y-1.5 transition">
+            <div class="flex items-center justify-between gap-2">
+              <span class="font-mono text-[10px] text-slate-400">${item.timestamp} · <strong class="text-cyan-400">${item.engine}</strong></span>
+              <div class="flex items-center gap-1.5">
+                ${deltaHtml}
+                <span class="font-mono text-xs font-bold ${scoreColor}">${item.score}/100</span>
+              </div>
+            </div>
+            <div class="text-xs font-semibold text-white truncate">${item.flowName}</div>
+            <div class="flex items-center justify-between text-[11px] text-slate-400">
+              <span>${item.presetLabel}</span>
+              <span class="font-mono text-[10px]">OK:${item.counts.ok} W:${item.counts.warn} C:${item.counts.crit}</span>
+            </div>
+          </div>
+        `;
+      }).join('');
     }
 
     // ============================================================================
@@ -1088,10 +1153,12 @@
       els.reasoningFeed.innerHTML = '';
       els.emptyStreamState.classList.remove('hidden');
       els.reportReadyDot.classList.add('hidden');
+      els.scoreDeltaBadge.classList.add('hidden');
 
       FLOW_NODES.forEach(node => {
         const card = document.getElementById(`node-card-${node.id}`);
         const badge = document.getElementById(`node-badge-${node.id}`);
+        if (!card || !badge) return;
         card.className = 'vault-node absolute rounded-xl bg-obsidian-850/95 border border-slate-700/80 p-3 shadow-xl transition-all duration-300 cursor-pointer hover:border-slate-500';
         card.style.boxShadow = '';
         badge.className = 'font-mono text-[9px] px-1.5 py-0.5 rounded bg-slate-800/80 text-slate-500';
@@ -1115,16 +1182,15 @@
 
       const preset = AUDIT_PRESETS[state.presetKey];
       const firstNode = FLOW_NODES.find(n => n.id === SCAN_SEQUENCE[0]);
+      if (!firstNode) return;
 
-      // Despliegue inicial de la sonda en el Trigger
       els.scannerProbe.style.opacity = '1';
       setProbeAppearance('scanning', true);
       positionProbe(firstNode.x, firstNode.y);
       state.trailPoints.push(`${firstNode.x},${firstNode.y}`);
       focusCameraOnPoint(firstNode.x, firstNode.y, true);
 
-      await sleep(320, runId);
-
+      await sleep(300, runId);
       let prevNode = firstNode;
 
       for (let i = 0; i < SCAN_SEQUENCE.length; i++) {
@@ -1132,17 +1198,15 @@
         const nodeId = SCAN_SEQUENCE[i];
         const node = FLOW_NODES.find(n => n.id === nodeId);
         const finding = preset.findings[nodeId];
+        if (!node || !finding) continue;
 
-        // 1. Desplazamiento de la sonda hasta el nodo
         setProbeAppearance('scanning', false);
         if (i > 0) {
           els.probeCallout.classList.add('hidden');
           await animateProbeBetweenNodes(prevNode, node, runId);
         }
-
         if (runId !== state.scanRunId) return;
 
-        // 2. Anclaje e inspección en el nodo
         setProbeAppearance('scanning', true);
         highlightNodeCard(node.id, 'scanning');
 
@@ -1154,18 +1218,16 @@
           els.calloutThought.textContent = finding.thought;
         }
 
-        // Pausa de razonamiento proporcional a la complejidad del nodo
-        await sleep(880 * node.complexity, runId);
+        await sleep(820 * (node.complexity || 1.2), runId);
         if (runId !== state.scanRunId) return;
 
-        // 3. Emisión del veredicto en el nodo
         state.auditedResults[node.id] = finding;
         setProbeAppearance(finding.status, false);
         highlightNodeCard(node.id, finding.status);
 
         if (finding.status === 'critical' || finding.status === 'warning') {
           triggerAnomalyRipple(node, finding.status);
-          await sleep(350, runId);
+          await sleep(320, runId);
         }
 
         appendReasoningCard(node, finding, i + 1);
@@ -1175,7 +1237,6 @@
 
       if (runId !== state.scanRunId) return;
 
-      // Escaneo finalizado
       state.isScanning = false;
       state.isComplete = true;
       els.probeCallout.classList.add('hidden');
@@ -1183,17 +1244,28 @@
       els.startScanBtn.classList.remove('opacity-85');
       els.reportReadyDot.classList.remove('hidden');
 
-      buildExecutiveReport();
-      if (state.cameraFollow) {
-        fitVaultToViewport();
+      const finalScore = Number(els.healthScoreText.textContent) || 0;
+      const counts = {
+        ok: Number(els.countOk.textContent) || 0,
+        warn: Number(els.countWarn.textContent) || 0,
+        crit: Number(els.countCrit.textContent) || 0
+      };
+      const delta = saveAuditToHistory(finalScore, els.flowVerdictText.textContent, counts);
+      if (delta !== null && delta !== 0) {
+        els.scoreDeltaBadge.textContent = `${delta > 0 ? '+' : ''}${delta} vs anterior`;
+        els.scoreDeltaBadge.className = `font-mono text-[10px] px-1.5 py-0.5 rounded ${delta > 0 ? 'bg-emerald-500/15 text-emerald-300' : 'bg-rose-500/15 text-rose-300'}`;
+        els.scoreDeltaBadge.classList.remove('hidden');
       }
+
+      buildExecutiveReport();
+      if (state.cameraFollow) fitVaultToViewport();
     }
 
     function highlightNodeCard(nodeId, statusKey) {
       const card = document.getElementById(`node-card-${nodeId}`);
       const badge = document.getElementById(`node-badge-${nodeId}`);
       const st = STATUS_COLORS[statusKey];
-
+      if (!card || !badge) return;
       card.className = `vault-node absolute rounded-xl bg-obsidian-850/95 border-2 ${st.border} p-3 shadow-xl transition-all duration-300 cursor-pointer`;
       card.style.boxShadow = `0 0 24px ${st.bg}`;
       badge.className = `font-mono text-[9px] px-1.5 py-0.5 rounded font-semibold ${st.text}`;
@@ -1201,9 +1273,6 @@
       badge.textContent = st.badge;
     }
 
-    // ============================================================================
-    // PANEL DE RAZONAMIENTO EN VIVO E INFORME SIMPLIFICADO
-    // ============================================================================
     function appendReasoningCard(node, finding, stepNum) {
       const st = STATUS_COLORS[finding.status];
       const item = document.createElement('div');
@@ -1223,14 +1292,27 @@
         <p class="text-[11px] font-mono text-slate-300 leading-relaxed mb-1.5">${finding.thought}</p>
         <p class="text-[11px] text-slate-400 leading-snug">${finding.detail}</p>
         ${finding.status !== 'ok' ? `
-          <div class="mt-2 pt-2 border-t border-slate-800/80 text-[11px] text-cyan-300 flex items-start gap-1.5">
-            <span class="font-mono font-bold shrink-0">FIX →</span>
-            <span>${finding.fix}</span>
+          <div class="mt-2 pt-2 border-t border-slate-800/80 space-y-2">
+            <div class="text-[11px] text-cyan-300 flex items-start gap-1.5">
+              <span class="font-mono font-bold shrink-0">FIX →</span>
+              <span>${finding.fix}</span>
+            </div>
+            <button data-patch-node="${node.id}" class="auto-patch-btn w-full py-1.5 px-2.5 rounded-lg bg-purple-500/15 hover:bg-purple-500/25 border border-purple-500/35 text-[11px] font-mono text-purple-200 flex items-center justify-center gap-1.5 transition cursor-pointer">
+              <span>⚡ Generar Parche JSON (Reglas + LLM)</span>
+            </button>
           </div>
         ` : ''}
       `;
 
-      item.addEventListener('click', () => selectNodeForInspection(node.id));
+      item.addEventListener('click', (e) => {
+        if (e.target.closest('.auto-patch-btn')) {
+          e.stopPropagation();
+          openAutoPatchModal(node.id);
+          return;
+        }
+        selectNodeForInspection(node.id);
+      });
+
       els.reasoningFeed.appendChild(item);
       if (els.panelScrollArea) {
         els.panelScrollArea.scrollTop = els.panelScrollArea.scrollHeight;
@@ -1241,14 +1323,11 @@
       const node = FLOW_NODES.find(n => n.id === nodeId);
       if (!node) return;
       state.selectedNodeId = nodeId;
-
-      // Enfocar cámara en el nodo seleccionado
       const prevFollow = state.cameraFollow;
       state.cameraFollow = true;
       focusCameraOnPoint(node.x, node.y, true);
       state.cameraFollow = prevFollow;
 
-      // Mover sonda suavemente al nodo si ya terminó el escaneo
       if (!state.isScanning && state.auditedResults[nodeId]) {
         const finding = state.auditedResults[nodeId];
         els.scannerProbe.style.opacity = '1';
@@ -1256,7 +1335,6 @@
         positionProbe(node.x, node.y);
       }
 
-      // Resaltar tarjeta en el feed
       switchTab('stream');
       const feedItem = document.getElementById(`feed-item-${nodeId}`);
       if (feedItem) {
@@ -1270,7 +1348,6 @@
       const entries = Object.values(state.auditedResults);
       const total = FLOW_NODES.length;
       const auditedCount = entries.length;
-
       let ok = 0, warn = 0, crit = 0;
       entries.forEach(f => {
         if (f.status === 'ok') ok++;
@@ -1293,14 +1370,10 @@
         return;
       }
 
-      // Cálculo dinámico del índice de salud (0 - 100)
       const rawScore = Math.max(12, Math.round(100 - (crit * 24) - (warn * 9)));
       els.healthScoreText.textContent = `${rawScore}`;
       els.mobileScoreBadge.textContent = `${rawScore}/100`;
-
-      const circumference = 144.5;
-      const offset = circumference - (rawScore / 100) * circumference;
-      els.scoreArc.style.strokeDashoffset = `${offset}`;
+      els.scoreArc.style.strokeDashoffset = `${144.5 - (rawScore / 100) * 144.5}`;
 
       if (rawScore >= 80) {
         els.scoreArc.setAttribute('stroke', '#34d399');
@@ -1325,13 +1398,12 @@
       SCAN_SEQUENCE.forEach(id => {
         const node = FLOW_NODES.find(n => n.id === id);
         const f = state.auditedResults[id];
-        if (!f) return;
+        if (!f || !node) return;
         if (f.status === 'critical') critNodes.push({ node, f });
         if (f.status === 'warning') warnNodes.push({ node, f });
       });
 
       const score = els.healthScoreText.textContent;
-
       els.reportContent.innerHTML = `
         <div class="rounded-xl bg-obsidian-900 border border-slate-800 p-3.5 space-y-2">
           <div class="flex items-center justify-between">
@@ -1340,57 +1412,37 @@
           </div>
           <p class="text-xs text-slate-300 leading-relaxed">${preset.summary}</p>
           <div class="pt-1 text-[11px] text-slate-400">
-            Se detectaron <strong class="text-rose-400">${critNodes.length} hallazgos críticos</strong> y <strong class="text-amber-400">${warnNodes.length} advertencias</strong> que impactan la estabilidad bajo este perfil de auditoría.
+            Se detectaron <strong class="text-rose-400">${critNodes.length} hallazgos críticos</strong> y <strong class="text-amber-400">${warnNodes.length} advertencias</strong> bajo este perfil.
           </div>
         </div>
 
-        ${critNodes.length > 0 ? `
-          <div class="space-y-2">
-            <h3 class="text-[11px] font-mono uppercase tracking-wider text-rose-400 flex items-center gap-1.5">
-              <span class="w-2 h-2 rounded-full bg-rose-500"></span>
-              Prioridad Alta — Acción Inmediata (${critNodes.length})
-            </h3>
-            ${critNodes.map(({ node, f }) => `
-              <div onclick="selectNodeForInspection('${node.id}')" class="rounded-xl bg-rose-500/5 border border-rose-500/30 p-3 cursor-pointer hover:bg-rose-500/10 transition">
-                <div class="flex items-center justify-between mb-1">
-                  <span class="text-xs font-semibold text-white">${node.name}</span>
-                  <span class="font-mono text-[10px] text-rose-300">${node.code}</span>
-                </div>
-                <p class="text-[11px] text-slate-300 mb-2">${f.detail}</p>
-                <div class="text-[11px] font-mono text-emerald-300 bg-obsidian-950/80 rounded-lg p-2 border border-slate-800">
-                  ✓ Solución: ${f.fix}
-                </div>
-              </div>
-            `).join('')}
+        ${critNodes.map(({ node, f }) => `
+          <div class="rounded-xl bg-rose-500/5 border border-rose-500/30 p-3 space-y-2">
+            <div class="flex items-center justify-between">
+              <span class="text-xs font-semibold text-white">${node.name}</span>
+              <span class="font-mono text-[10px] text-rose-300">${node.code} · CRÍTICO</span>
+            </div>
+            <p class="text-[11px] text-slate-300">${f.detail}</p>
+            <button onclick="openAutoPatchModal('${node.id}')" class="w-full py-1.5 rounded-lg bg-purple-500/15 hover:bg-purple-500/25 border border-purple-500/35 text-[11px] font-mono text-purple-200 cursor-pointer">
+              ⚡ Ver Parche JSON Automático
+            </button>
           </div>
-        ` : ''}
+        `).join('')}
 
-        ${warnNodes.length > 0 ? `
-          <div class="space-y-2">
-            <h3 class="text-[11px] font-mono uppercase tracking-wider text-amber-400 flex items-center gap-1.5">
-              <span class="w-2 h-2 rounded-full bg-amber-400"></span>
-              Optimizaciones Recomendadas (${warnNodes.length})
-            </h3>
-            ${warnNodes.map(({ node, f }) => `
-              <div onclick="selectNodeForInspection('${node.id}')" class="rounded-xl bg-amber-500/5 border border-amber-500/30 p-3 cursor-pointer hover:bg-amber-500/10 transition">
-                <div class="flex items-center justify-between mb-1">
-                  <span class="text-xs font-semibold text-white">${node.name}</span>
-                  <span class="font-mono text-[10px] text-amber-300">${node.code}</span>
-                </div>
-                <p class="text-[11px] text-slate-300 mb-2">${f.detail}</p>
-                <div class="text-[11px] font-mono text-cyan-300 bg-obsidian-950/80 rounded-lg p-2 border border-slate-800">
-                  → Mejora: ${f.fix}
-                </div>
-              </div>
-            `).join('')}
+        ${warnNodes.map(({ node, f }) => `
+          <div class="rounded-xl bg-amber-500/5 border border-amber-500/30 p-3 space-y-2">
+            <div class="flex items-center justify-between">
+              <span class="text-xs font-semibold text-white">${node.name}</span>
+              <span class="font-mono text-[10px] text-amber-300">${node.code} · WARN</span>
+            </div>
+            <p class="text-[11px] text-slate-300">${f.detail}</p>
+            <button onclick="openAutoPatchModal('${node.id}')" class="w-full py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 border border-slate-700 text-[11px] font-mono text-cyan-300 cursor-pointer">
+              ⚡ Ver Parche JSON Recomendado
+            </button>
           </div>
-        ` : ''}
+        `).join('')}
 
         <button id="copyReportBtn" class="w-full py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 border border-slate-700 text-xs font-medium text-white transition flex items-center justify-center gap-2 cursor-pointer">
-          <svg class="w-3.5 h-3.5 text-cyan-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <rect x="9" y="9" width="13" height="13" rx="2" />
-            <path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1" />
-          </svg>
           <span id="copyReportText">Copiar Informe Markdown</span>
         </button>
       `;
@@ -1402,85 +1454,221 @@
       const preset = AUDIT_PRESETS[state.presetKey];
       const lines = [
         `# State of Flows (SoFs) — Informe de Auditoría`,
-        `- **Flow:** prod_onboarding_billing_pipeline`,
+        `- **Flow:** ${activeFlowName} (${activeEngineBadge})`,
         `- **Preset:** ${preset.label}`,
         `- **Health Score:** ${els.healthScoreText.textContent}/100 (${els.flowVerdictText.textContent})`,
         ``,
         `## Hallazgos por Sección`
       ];
-
       SCAN_SEQUENCE.forEach(id => {
         const node = FLOW_NODES.find(n => n.id === id);
         const f = state.auditedResults[id];
-        if (f) {
-          lines.push(`- **[${f.status.toUpperCase()}] ${node.code} ${node.name}:** ${f.detail} *(Fix: ${f.fix})*`);
-        }
+        if (f && node) lines.push(`- **[${f.status.toUpperCase()}] ${node.code} ${node.name}:** ${f.detail} *(Fix: ${f.fix})*`);
       });
 
-      const textarea = document.createElement('textarea');
-      textarea.value = lines.join('\n');
-      document.body.appendChild(textarea);
-      textarea.select();
-      document.execCommand('copy');
-      document.body.removeChild(textarea);
-
+      navigator.clipboard?.writeText(lines.join('\n'));
       const label = document.getElementById('copyReportText');
       label.textContent = '¡Informe copiado al portapapeles!';
       setTimeout(() => { label.textContent = 'Copiar Informe Markdown'; }, 2200);
     }
 
     // ============================================================================
-    // EVENTOS DE INTERFAZ Y CONTROLES
+    // PARSER NATIVO PARA BLUEPRINTS DE n8n Y MAKE
     // ============================================================================
+    function classifyNodeRole(rawType = '', rawName = '') {
+      const str = `${rawType} ${rawName}`.toLowerCase();
+      if (str.includes('webhook') || str.includes('trigger') || str.includes('watch') || str.includes('cron') || str.includes('form')) return { prefix: 'TRG', category: 'Trigger', zone: 0, complexity: 1.0 };
+      if (str.includes('auth') || str.includes('filter') || str.includes('validat') || str.includes('guard')) return { prefix: 'SEC', category: 'Guardrail', zone: 0, complexity: 1.2 };
+      if (str.includes('openai') || str.includes('anthropic') || str.includes('claude') || str.includes('gemini') || str.includes('llm') || str.includes('agent') || str.includes('langchain')) return { prefix: 'AI', category: 'LLM / Agent', zone: 1, complexity: 1.6 };
+      if (str.includes('if') || str.includes('switch') || str.includes('router') || str.includes('merge')) return { prefix: 'RTR', category: 'Router / Logic', zone: 1, complexity: 1.3 };
+      if (str.includes('http') || str.includes('request') || str.includes('enrich') || str.includes('hubspot')) return { prefix: 'API', category: 'External API', zone: 1, complexity: 1.4 };
+      if (str.includes('postgres') || str.includes('supabase') || str.includes('airtable') || str.includes('sheets') || str.includes('stripe')) return { prefix: 'DB', category: 'Persistence / Billing', zone: 2, complexity: 1.3 };
+      if (str.includes('slack') || str.includes('email') || str.includes('gmail') || str.includes('telegram') || str.includes('discord')) return { prefix: 'OPS', category: 'Notification / Out', zone: 2, complexity: 1.0 };
+      return { prefix: 'NOD', category: 'Operation', zone: 1, complexity: 1.2 };
+    }
+
+    function evaluateImportedNode(node, rawObj, engine) {
+      const jsonStr = JSON.stringify(rawObj || {}).toLowerCase();
+      const role = node._role;
+      const hasRetry = jsonStr.includes('"retryonfail":true') || jsonStr.includes('"maxtries"') || jsonStr.includes('"break"') || jsonStr.includes('onerror');
+      const hasTimeout = jsonStr.includes('"timeout"');
+      const hasAuth = jsonStr.includes('authentication') || jsonStr.includes('credentials') || jsonStr.includes('authorization');
+      const hasIdempotency = jsonStr.includes('idempotency');
+      const hasPiiExposure = (role.prefix === 'AI' || role.prefix === 'OPS') && (jsonStr.includes('email') || jsonStr.includes('phone') || jsonStr.includes('{{') || jsonStr.includes('$json'));
+      const usesHeavyModel = jsonStr.includes('gpt-4') || jsonStr.includes('claude-3-opus') || jsonStr.includes('o1-');
+
+      let resFinding = { status: 'ok', thought: `Inspeccionando nodo ${node.name} (${engine}) → Estructura válida.`, detail: `Configuración nominal detectada para ${node.type}.`, fix: 'Ninguna acción requerida.' };
+      if ((role.prefix === 'API' || role.prefix === 'AI') && !hasRetry && !hasTimeout) {
+        resFinding = { status: 'critical', ruleId: 'RES-HTTP-RETRY', thought: `¡Alerta! ${node.name} ejecuta llamadas externas sin política de reintentos ni timeout.`, detail: `Si el servicio externo responde con 429/502, el flujo de ${engine} fallará sin recuperación.`, fix: engine === 'n8n' ? 'Activar "Retry On Fail" (max 3 tries) y Timeout.' : 'Añadir Error Handler directive (Break / Resume).' };
+      } else if (role.prefix === 'DB' && jsonStr.includes('stripe') && !hasIdempotency) {
+        resFinding = { status: 'critical', ruleId: 'RES-IDEMPOTENCY', thought: `¡Riesgo Crítico! Mutación financiera en ${node.name} sin Idempotency-Key.`, detail: 'Reejecutar este flujo puede provocar cobros duplicados.', fix: 'Inyectar Idempotency-Key derivada del evento.' };
+      }
+
+      let secFinding = { status: 'ok', thought: `Verificando seguridad en ${node.name} → Sin secretos expuestos.`, detail: 'Credenciales referenciadas de forma segura.', fix: 'Ninguna acción requerida.' };
+      if (role.prefix === 'TRG' && !hasAuth) {
+        secFinding = { status: 'warning', ruleId: 'SEC-HMAC-AUTH', thought: `Trigger ${node.name} sin esquema de autenticación/firma explícito.`, detail: 'Un webhook público sin validación puede recibir payloads falsificados.', fix: 'Activar Header Auth o firma HMAC-SHA256.' };
+      } else if (role.prefix === 'AI' && hasPiiExposure) {
+        secFinding = { status: 'critical', ruleId: 'SEC-PII-SCRUB', thought: `¡Exposición PII! ${node.name} envía variables dinámicas con datos personales al LLM.`, detail: 'Campos como email viajan sin sanitización previa.', fix: 'Agregar nodo previo de enmascaramiento PII.' };
+      }
+
+      let perfFinding = { status: 'ok', thought: `Evaluando latencia de ${node.name} → Ejecución eficiente.`, detail: 'Sin cuellos de botella estructurales.', fix: 'Ninguna acción requerida.' };
+      if (role.prefix === 'AI' && usesHeavyModel) {
+        perfFinding = { status: 'critical', ruleId: 'PERF-LLM-TIER', thought: `¡Sobrecosto LLM! ${node.name} utiliza un modelo pesado de alto costo.`, detail: 'Incrementa costo y latencia innecesariamente.', fix: 'Evaluar migración a variante Mini/Flash.' };
+      } else if (role.prefix === 'API') {
+        perfFinding = { status: 'warning', ruleId: 'PERF-API-CACHE', thought: `Llamada externa síncrona en ${node.name} → Impacta latencia total.`, detail: 'Considera cachear respuestas frecuentes.', fix: 'Implementar caché Redis TTL.' };
+      }
+
+      return { resilience: resFinding, security: secFinding, performance: perfFinding };
+    }
+
+    function parseAutomationBlueprint(rawJsonText) {
+      let data;
+      try { data = JSON.parse(rawJsonText); } catch { throw new Error('JSON inválido. Verifica llaves y comas.'); }
+
+      let engine = 'Custom JSON';
+      let flowTitle = data.name || data.flow_name || 'imported_automation_flow';
+      let extractedNodes = [];
+      let extractedEdges = [];
+
+      if (Array.isArray(data.nodes)) {
+        engine = 'n8n';
+        const validNodes = data.nodes.filter(n => !String(n.type || '').includes('stickyNote'));
+        if (!validNodes.length) throw new Error('El workflow de n8n no contiene nodos ejecutables.');
+        const nameToId = {};
+        validNodes.forEach((n, idx) => {
+          const id = `n${idx + 1}`;
+          const nodeName = n.name || `Paso ${idx + 1}`;
+          nameToId[nodeName] = id;
+          const role = classifyNodeRole(n.type, nodeName);
+          const shortType = String(n.type || 'n8n.node').split('.').pop();
+          extractedNodes.push({ id, code: `${role.prefix}-0${idx + 1}`, name: nodeName, type: shortType, _role: role, _raw: n, meta: shortType, complexity: role.complexity, downstream: [] });
+        });
+        if (data.connections) {
+          Object.entries(data.connections).forEach(([src, outs]) => {
+            const fromId = nameToId[src];
+            if (!fromId || !Array.isArray(outs?.main)) return;
+            outs.main.forEach(branch => branch?.forEach(c => {
+              const toId = nameToId[c.node];
+              if (toId && fromId !== toId) extractedEdges.push({ from: fromId, to: toId });
+            }));
+          });
+        }
+      } else if (Array.isArray(data.flow)) {
+        engine = 'Make';
+        const flatten = (mods) => mods.flatMap(m => [m, ...(m.routes || []).flatMap(r => flatten(r.flow || []))]);
+        const allModules = flatten(data.flow);
+        if (!allModules.length) throw new Error('El blueprint de Make no contiene módulos.');
+        const modMap = {};
+        allModules.forEach((m, idx) => {
+          const id = `n${idx + 1}`;
+          modMap[m.id] = id;
+          const modName = m.metadata?.designer?.name || m.module || `Módulo ${idx + 1}`;
+          const role = classifyNodeRole(m.module, modName);
+          extractedNodes.push({ id, code: `${role.prefix}-0${idx + 1}`, name: modName, type: m.module || 'make.module', _role: role, _raw: m, meta: m.module || 'Make', complexity: role.complexity, downstream: [] });
+        });
+        const linkSeq = (mods, parentId = null) => {
+          let prev = parentId;
+          mods.forEach(m => {
+            const curr = modMap[m.id];
+            if (prev && curr && prev !== curr) extractedEdges.push({ from: prev, to: curr });
+            (m.routes || []).forEach(r => linkSeq(r.flow || [], curr));
+            prev = curr;
+          });
+        };
+        linkSeq(data.flow);
+      } else {
+        throw new Error('Estructura no reconocida. Pega un JSON de n8n ("nodes") o Make ("flow").');
+      }
+
+      if (!extractedEdges.length && extractedNodes.length > 1) {
+        for (let i = 0; i < extractedNodes.length - 1; i++) extractedEdges.push({ from: extractedNodes[i].id, to: extractedNodes[i + 1].id });
+      }
+
+      const zones = [[], [], []];
+      extractedNodes.forEach((n, idx) => {
+        let z = idx === 0 ? 0 : (idx === extractedNodes.length - 1 && extractedNodes.length > 2) ? 2 : n._role.zone;
+        zones[z].push(n);
+      });
+
+      const zoneCentersX = [250, 750, 1260];
+      zones.forEach((zNodes, zIdx) => {
+        const count = zNodes.length;
+        const startY = count === 1 ? 310 : 190;
+        const gapY = count > 1 ? Math.min(165, 420 / (count - 1)) : 0;
+        zNodes.forEach((node, i) => {
+          node.x = zoneCentersX[zIdx] + (count > 3 ? (i % 2 === 0 ? -95 : 95) : 0);
+          node.y = Math.round(startY + i * gapY);
+        });
+      });
+
+      const newFindings = { resilience: {}, security: {}, performance: {} };
+      extractedNodes.forEach(node => {
+        node.downstream = extractedEdges.filter(e => e.from === node.id).map(e => e.to);
+        const ev = evaluateImportedNode(node, node._raw, engine);
+        newFindings.resilience[node.id] = ev.resilience;
+        newFindings.security[node.id] = ev.security;
+        newFindings.performance[node.id] = ev.performance;
+      });
+
+      activeFlowName = flowTitle;
+      activeEngineBadge = engine;
+      FLOW_NODES = extractedNodes;
+      FLOW_EDGES = extractedEdges;
+      SCAN_SEQUENCE = extractedNodes.map(n => n.id);
+      VAULT_SECTIONS = [
+        { id: 'sec_ingest', title: `01 // INGESTA (${engine.toUpperCase()})`, x: 70, y: 110, w: 390, h: 520 },
+        { id: 'sec_logic',  title: '02 // PROCESAMIENTO, APIS & IA', x: 510, y: 110, w: 480, h: 520 },
+        { id: 'sec_output', title: '03 // PERSISTENCIA & SALIDA', x: 1040, y: 110, w: 450, h: 520 }
+      ];
+      AUDIT_PRESETS.resilience.findings = newFindings.resilience;
+      AUDIT_PRESETS.security.findings = newFindings.security;
+      AUDIT_PRESETS.performance.findings = newFindings.performance;
+
+      document.getElementById('headerFlowName').textContent = `${flowTitle} [${engine}]`;
+      resetVaultVisuals();
+      initVault();
+    }
+
+    // ============================================================================
+    // NAVEGACIÓN TABS Y EVENTOS DE MODALES
+    // ============================================================================
+    function switchTab(tab) {
+      state.activeTab = tab;
+      els.streamView.classList.toggle('hidden', tab !== 'stream');
+      els.reportView.classList.toggle('hidden', tab !== 'report');
+      els.historyView.classList.toggle('hidden', tab !== 'history');
+
+      [els.tabStreamBtn, els.tabReportBtn, els.tabHistoryBtn].forEach(btn => {
+        btn.className = 'py-1.5 rounded-md text-slate-400 hover:text-white transition flex items-center justify-center gap-1 cursor-pointer';
+      });
+      const activeBtn = tab === 'stream' ? els.tabStreamBtn : tab === 'report' ? els.tabReportBtn : els.tabHistoryBtn;
+      activeBtn.className = 'py-1.5 rounded-md bg-slate-800 text-white transition flex items-center justify-center gap-1 cursor-pointer';
+      if (tab === 'report') els.reportReadyDot.classList.add('hidden');
+    }
+
     function updatePresetHeader() {
       els.activePresetTitle.textContent = AUDIT_PRESETS[state.presetKey].label;
     }
 
     function setCameraFollow(enabled) {
       state.cameraFollow = enabled;
-      if (enabled) {
-        els.cameraFollowBtn.className = 'hidden sm:flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-medium border border-cyan-500/40 bg-cyan-500/10 text-cyan-300 transition';
-        els.cameraDot.className = 'w-1.5 h-1.5 rounded-full bg-cyan-400 animate-pulse';
-      } else {
-        els.cameraFollowBtn.className = 'hidden sm:flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-medium border border-slate-700 bg-obsidian-850 text-slate-400 transition';
-        els.cameraDot.className = 'w-1.5 h-1.5 rounded-full bg-slate-500';
-      }
-    }
-
-    function switchTab(tab) {
-      state.activeTab = tab;
-      if (tab === 'stream') {
-        els.streamView.classList.remove('hidden');
-        els.reportView.classList.add('hidden');
-        els.tabStreamBtn.className = 'py-1.5 rounded-md bg-slate-800 text-white transition';
-        els.tabReportBtn.className = 'py-1.5 rounded-md text-slate-400 hover:text-white transition flex items-center justify-center gap-1.5';
-      } else {
-        els.streamView.classList.add('hidden');
-        els.reportView.classList.remove('hidden');
-        els.tabReportBtn.className = 'py-1.5 rounded-md bg-slate-800 text-white transition flex items-center justify-center gap-1.5';
-        els.tabStreamBtn.className = 'py-1.5 rounded-md text-slate-400 hover:text-white transition';
-        if (!state.isComplete && Object.keys(state.auditedResults).length === 0) {
-          els.reportContent.innerHTML = `<div class="text-center py-10 text-xs text-slate-400 border border-dashed border-slate-800 rounded-xl p-4">Ejecuta un escaneo SoFs para generar el informe simplificado de este preset.</div>`;
-        } else if (!state.isComplete) {
-          buildExecutiveReport();
-        }
-      }
+      els.cameraFollowBtn.className = enabled
+        ? 'hidden lg:flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-medium border border-cyan-500/40 bg-cyan-500/10 text-cyan-300 transition cursor-pointer'
+        : 'hidden lg:flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-medium border border-slate-800 bg-obsidian-850 text-slate-400 transition cursor-pointer';
+      els.cameraDot.className = enabled ? 'w-1.5 h-1.5 rounded-full bg-cyan-400 animate-pulse' : 'w-1.5 h-1.5 rounded-full bg-slate-600';
     }
 
     els.startScanBtn.addEventListener('click', runSoFsAudit);
-
     els.presetSelect.addEventListener('change', (e) => {
       state.presetKey = e.target.value;
       updatePresetHeader();
-      resetVaultVisuals();
-      els.startBtnText.textContent = 'Iniciar Escaneo SoFs';
+      if (state.isScanning || state.isComplete) runSoFsAudit();
+      else resetVaultVisuals();
     });
 
     document.querySelectorAll('.speed-btn').forEach(btn => {
       btn.addEventListener('click', () => {
-        document.querySelectorAll('.speed-btn').forEach(b => {
-          b.className = 'speed-btn px-2 py-1 rounded-md text-slate-400 hover:text-white transition';
-        });
+        document.querySelectorAll('.speed-btn').forEach(b => b.className = 'speed-btn px-2 py-1 rounded-md text-slate-400 hover:text-white transition');
         btn.className = 'speed-btn px-2 py-1 rounded-md bg-slate-700/80 text-white transition';
         const val = btn.getAttribute('data-speed');
         state.speedMultiplier = val === 'instant' ? 'instant' : parseFloat(val);
@@ -1488,30 +1676,105 @@
     });
 
     els.cameraFollowBtn.addEventListener('click', () => setCameraFollow(!state.cameraFollow));
-    els.tabStreamBtn.addEventListener('click', () => switchTab('stream'));
-    els.tabReportBtn.addEventListener('click', () => switchTab('report'));
-
-    document.getElementById('zoomInBtn').addEventListener('click', () => {
-      state.zoom = Math.min(1.6, state.zoom * 1.15);
-      applyVaultTransform(true);
-    });
-    document.getElementById('zoomOutBtn').addEventListener('click', () => {
-      state.zoom = Math.max(0.4, state.zoom * 0.85);
-      applyVaultTransform(true);
-    });
+    document.getElementById('zoomInBtn').addEventListener('click', () => { state.zoom = Math.min(1.6, state.zoom * 1.15); applyVaultTransform(true); });
+    document.getElementById('zoomOutBtn').addEventListener('click', () => { state.zoom = Math.max(0.4, state.zoom * 0.85); applyVaultTransform(true); });
     document.getElementById('resetViewBtn').addEventListener('click', fitVaultToViewport);
 
-    // Panel móvil
-    document.getElementById('togglePanelMobileBtn').addEventListener('click', () => {
-      els.reportSidebar.classList.remove('translate-x-full');
-    });
-    document.getElementById('closePanelMobileBtn').addEventListener('click', () => {
-      els.reportSidebar.classList.add('translate-x-full');
+    els.tabStreamBtn.addEventListener('click', () => switchTab('stream'));
+    els.tabReportBtn.addEventListener('click', () => switchTab('report'));
+    els.tabHistoryBtn.addEventListener('click', () => switchTab('history'));
+
+    document.getElementById('clearHistoryBtn').addEventListener('click', () => {
+      localStorage.removeItem(HISTORY_STORAGE_KEY);
+      renderHistoryList();
     });
 
-    window.addEventListener('resize', fitVaultToViewport);
+    document.getElementById('togglePanelMobileBtn').addEventListener('click', () => els.reportSidebar.classList.remove('translate-x-full'));
+    document.getElementById('closePanelMobileBtn').addEventListener('click', () => els.reportSidebar.classList.add('translate-x-full'));
 
-    // Inicializar al cargar
+    // Modal Importar Blueprint
+    const SAMPLE_N8N_JSON = {
+      name: "n8n_enterprise_lead_qualifier",
+      nodes: [
+        { name: "Webhook Typeform", type: "n8n-nodes-base.webhook", parameters: { path: "leads-in", authentication: "none" } },
+        { name: "Enrich Clearbit", type: "n8n-nodes-base.httpRequest", parameters: { url: "https://person.clearbit.com/v2/combined/find" } },
+        { name: "OpenAI Lead Scorer", type: "@n8n/n8n-nodes-langchain.openAi", parameters: { model: "gpt-4o", prompt: "Analiza email: {{$json.email}}" } },
+        { name: "Stripe Create Customer", type: "n8n-nodes-base.stripe", parameters: { operation: "create", resource: "customer" } },
+        { name: "Slack Ventas", type: "n8n-nodes-base.slack", parameters: { channel: "#ventas-vip", text: "Nuevo lead: {{$json}}" } }
+      ],
+      connections: {
+        "Webhook Typeform": { main: [[{ node: "Enrich Clearbit" }]] },
+        "Enrich Clearbit": { main: [[{ node: "OpenAI Lead Scorer" }]] },
+        "OpenAI Lead Scorer": { main: [[{ node: "Stripe Create Customer" }]] },
+        "Stripe Create Customer": { main: [[{ node: "Slack Ventas" }]] }
+      }
+    };
+
+    const SAMPLE_MAKE_JSON = {
+      name: "Make_Ecommerce_Order_Pipeline",
+      flow: [
+        { id: 1, module: "gateway:CustomWebHook", metadata: { designer: { name: "Shopify Order Webhook" } } },
+        { id: 2, module: "http:ActionSendData", metadata: { designer: { name: "Fraud Check API" } } },
+        { id: 3, module: "openai:CreateCompletion", metadata: { designer: { name: "Analizar Fraude GPT-4" } }, parameters: { model: "gpt-4", email: "{{1.email}}" } },
+        { id: 4, module: "postgres:InsertRecord", metadata: { designer: { name: "Guardar Orden DB" } } }
+      ]
+    };
+
+    const importModal = document.getElementById('importBlueprintModal');
+    const importTextarea = document.getElementById('blueprintTextarea');
+    const importErrorBanner = document.getElementById('importErrorBanner');
+
+    document.getElementById('openImportModalBtn').addEventListener('click', () => { importErrorBanner.classList.add('hidden'); importModal.classList.remove('hidden'); });
+    document.getElementById('closeImportModalBtn').addEventListener('click', () => importModal.classList.add('hidden'));
+    document.getElementById('loadSampleN8nBtn').addEventListener('click', () => { importTextarea.value = JSON.stringify(SAMPLE_N8N_JSON, null, 2); });
+    document.getElementById('loadSampleMakeBtn').addEventListener('click', () => { importTextarea.value = JSON.stringify(SAMPLE_MAKE_JSON, null, 2); });
+
+    document.getElementById('blueprintFileInput').addEventListener('change', (e) => {
+      const file = e.target.files?.[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = (ev) => { importTextarea.value = ev.target.result; };
+      reader.readAsText(file);
+    });
+
+    document.getElementById('parseAndLoadBtn').addEventListener('click', () => {
+      try {
+        parseAutomationBlueprint(importTextarea.value.trim());
+        importModal.classList.add('hidden');
+        runSoFsAudit();
+      } catch (err) {
+        importErrorBanner.textContent = `⚠ ${err.message}`;
+        importErrorBanner.classList.remove('hidden');
+      }
+    });
+
+    // Modal Configuración Híbrida & Visor de Parches
+    const hybridModal = document.getElementById('hybridConfigModal');
+    const providerSelect = document.getElementById('llmProviderSelect');
+    const apiKeyGroup = document.getElementById('apiKeyFieldGroup');
+
+    document.getElementById('openHybridConfigBtn').addEventListener('click', () => hybridModal.classList.remove('hidden'));
+    document.getElementById('closeHybridConfigBtn').addEventListener('click', () => hybridModal.classList.add('hidden'));
+    providerSelect.addEventListener('change', () => {
+      apiKeyGroup.classList.toggle('hidden', providerSelect.value === 'local');
+    });
+
+    document.getElementById('saveHybridConfigBtn').addEventListener('click', () => {
+      state.hybridProvider = providerSelect.value;
+      state.hybridApiKey = document.getElementById('llmApiKeyInput').value.trim();
+      document.getElementById('hybridModeBadge').textContent = state.hybridProvider === 'local' ? 'Híbrido: Local' : `Híbrido: ${state.hybridProvider.toUpperCase()}`;
+      hybridModal.classList.add('hidden');
+    });
+
+    document.getElementById('closePatchModalBtn').addEventListener('click', () => document.getElementById('patchViewerModal').classList.add('hidden'));
+    document.getElementById('copyPatchSnippetBtn').addEventListener('click', () => {
+      const code = document.getElementById('patchCodeOutput').textContent;
+      navigator.clipboard?.writeText(code);
+      const btn = document.getElementById('copyPatchSnippetBtn');
+      btn.textContent = '¡Parche JSON copiado!';
+      setTimeout(() => { btn.textContent = 'Copiar Parche JSON'; }, 2000);
+    });
+
     window.addEventListener('load', initVault);
   </script>
 </body>
