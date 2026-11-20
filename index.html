@@ -3,7 +3,21 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>State of Flows (SoFs) — Auditoría Espacial y Observabilidad de Automatizaciones</title>
+  <title>State of Flows (SoFs) — Audita tu workflow de n8n antes de entregarlo</title>
+  <meta name="description" content="Pega el JSON de tu workflow de n8n y recibe un puntaje de 0 a 100 con los riesgos y su arreglo. El análisis corre en tu navegador." />
+  <meta name="theme-color" content="#06080c" />
+  <link rel="canonical" href="https://reneggarza.github.io/stateofflows/" />
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Crect width='24' height='24' rx='6' fill='%2306080c'/%3E%3Ccircle cx='12' cy='12' r='3' fill='%2322d3ee'/%3E%3Ccircle cx='12' cy='12' r='8' fill='none' stroke='%2322d3ee' stroke-width='1.5' stroke-dasharray='3 3'/%3E%3C/svg%3E" />
+  <meta property="og:type" content="website" />
+  <meta property="og:locale" content="es_MX" />
+  <meta property="og:site_name" content="State of Flows" />
+  <meta property="og:title" content="State of Flows — Audita tu workflow de n8n antes de entregarlo" />
+  <meta property="og:description" content="Pega el JSON de tu workflow y recibe un puntaje de 0 a 100 con los riesgos y su arreglo. Corre en tu navegador." />
+  <meta property="og:url" content="https://reneggarza.github.io/stateofflows/" />
+  <meta property="og:image" content="https://reneggarza.github.io/stateofflows/og-image.png" />
+  <meta property="og:image:width" content="1200" />
+  <meta property="og:image:height" content="630" />
+  <meta name="twitter:card" content="summary_large_image" />
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -86,6 +100,11 @@
       transform-origin: center;
       animation: rippleExpand 1.2s cubic-bezier(0.16, 1, 0.3, 1) forwards;
     }
+
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; scroll-behavior: auto !important; }
+    }
+    :focus-visible { outline: 2px solid #22d3ee; outline-offset: 2px; }
   </style>
 </head>
 <body class="vault-bg text-slate-200 antialiased selection:bg-cyan-500/30 selection:text-cyan-200">
@@ -118,17 +137,18 @@
         <a href="#boveda-demo" class="hover:text-white transition">Demo en Vivo</a>
         <a href="#presets" class="hover:text-white transition">Presets de Auditoría</a>
         <a href="#informe" class="hover:text-white transition">Informe Simplificado</a>
-        <a href="#ecosistemas" class="hover:text-white transition">Integraciones</a>
+        <a href="#ecosistemas" class="hover:text-white transition">Compatibilidad</a>
+        <a href="#fundador" class="hover:text-white transition">Acceso fundador</a>
       </nav>
 
       <!-- Acciones -->
       <div class="flex items-center gap-2.5">
-        <a href="prototype.html" class="hidden sm:inline-flex items-center gap-1.5 px-3.5 py-2 rounded-lg text-xs font-medium text-cyan-300 hover:text-white border border-cyan-500/30 bg-cyan-500/10 hover:bg-cyan-500/20 transition">
+        <a href="state-of-flows.html" class="hidden sm:inline-flex items-center gap-1.5 px-3.5 py-2 rounded-lg text-xs font-medium text-cyan-300 hover:text-white border border-cyan-500/30 bg-cyan-500/10 hover:bg-cyan-500/20 transition">
           <span>Bóveda Full-Screen</span>
           <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 3h6v6M9 21H3v-6M21 3l-7 7M3 21l7-7"/></svg>
         </a>
         <button id="openWaitlistBtn" class="inline-flex items-center gap-2 px-4 py-2 rounded-lg text-xs font-semibold bg-cyan-500 hover:bg-cyan-400 text-slate-950 shadow-[0_0_20px_rgba(34,211,238,0.28)] transition active:scale-95 cursor-pointer">
-          <span>Acceso Anticipado</span>
+          <span>Acceso fundador</span>
           <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
         </button>
       </div>
@@ -147,28 +167,31 @@
       <div class="max-w-3xl mx-auto text-center mb-12">
         <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-obsidian-850 border border-slate-800 text-[11px] font-mono text-cyan-300 mb-6">
           <span class="w-1.5 h-1.5 rounded-full bg-cyan-400 animate-ping"></span>
-          <span>DIAGNÓSTICO VISUAL DE AUTOMATIZACIONES & AGENTES</span>
+          <span>Beta · auditoría de workflows n8n</span>
         </div>
 
         <h1 class="text-3xl sm:text-5xl lg:text-6xl font-extrabold tracking-tight text-white leading-[1.1] mb-5">
-          Mira lo que tus flujos ocultan <span class="text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 via-sky-300 to-emerald-400">antes de que fallen</span>.
+          Audita tu workflow de n8n <span class="text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 via-sky-300 to-emerald-400">antes de entregárselo al cliente</span>.
         </h1>
 
         <p class="text-base sm:text-lg text-slate-400 leading-relaxed mb-8 max-w-2xl mx-auto">
-          <strong class="text-slate-200 font-medium">State of Flows (SoFs)</strong> despliega una sonda inteligente sobre la arquitectura de tus automatizaciones, razona sección por sección según tu preset de auditoría y entrega un informe ejecutivo accionable en segundos.
+          Pega el JSON de tu flujo y obtén en segundos un puntaje de 0 a 100 y la lista de riesgos con su arreglo: reintentos que faltan, cobros que se pueden duplicar, datos personales enviados a una IA y más.
+          <strong class="text-slate-200 font-medium">El análisis corre en tu navegador: tu JSON no se sube a ningún servidor.</strong>
         </p>
 
         <div class="flex flex-col sm:flex-row items-center justify-center gap-3">
-          <a href="prototype.html" class="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-6 py-3.5 rounded-xl text-sm font-semibold bg-cyan-500 hover:bg-cyan-400 text-slate-950 shadow-[0_0_30px_rgba(34,211,238,0.3)] transition">
-            <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M15 3h6v6M9 21H3v-6M21 3l-7 7M3 21l7-7"/></svg>
-            <span>Abrir Bóveda Interactiva</span>
-          </a>
-          <button id="openJsonModalBtn" class="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-6 py-3.5 rounded-xl text-sm font-medium bg-obsidian-850 hover:bg-obsidian-800 text-slate-200 border border-slate-700/80 transition cursor-pointer">
-            <svg class="w-4 h-4 text-cyan-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 18l6-6-6-6M8 6l-6 6 6 6"/></svg>
-            <span>Auditar mi JSON de Flow</span>
+          <button id="openJsonModalBtn" class="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-6 py-3.5 rounded-xl text-sm font-semibold bg-cyan-500 hover:bg-cyan-400 text-slate-950 shadow-[0_0_30px_rgba(34,211,238,0.3)] transition cursor-pointer">
+            <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M16 18l6-6-6-6M8 6l-6 6 6 6"/></svg>
+            <span>Auditar mi workflow ahora</span>
           </button>
+          <a href="state-of-flows.html" class="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-6 py-3.5 rounded-xl text-sm font-medium bg-obsidian-850 hover:bg-obsidian-800 text-slate-200 border border-slate-700/80 transition">
+            <svg class="w-4 h-4 text-cyan-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 3h6v6M9 21H3v-6M21 3l-7 7M3 21l7-7"/></svg>
+            <span>Explorar la bóveda interactiva</span>
+          </a>
         </div>
+        <p class="mt-4 text-xs text-slate-400">¿Sin workflow a la mano? Carga un ejemplo dentro del analizador.</p>
       </div>
+
 
       <!-- =================================================================== -->
       <!-- BÓVEDA INTERACTIVA EMBEBIDA (DEMO PRINCIPAL)                        -->
@@ -183,7 +206,7 @@
               <span class="w-2.5 h-2.5 rounded-full bg-emerald-500/70"></span>
             </div>
             <span class="text-slate-700">|</span>
-            <span class="font-mono text-xs text-slate-300">vault://prod_lead_enrichment_v4</span>
+            <span class="font-mono text-xs text-slate-300">vault://flujo_de_muestra (demo animado)</span>
           </div>
 
           <!-- Controles de Preset y Disparo -->
@@ -199,7 +222,7 @@
               <span id="runDemoBtnLabel">Escanear Bóveda</span>
             </button>
 
-            <a href="prototype.html" title="Abrir prototipo completo con zoom, auto-cámara y reporte Markdown" class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium bg-obsidian-850 hover:bg-obsidian-800 text-slate-300 hover:text-white border border-slate-700/80 transition">
+            <a href="state-of-flows.html" title="Abrir prototipo completo con zoom, auto-cámara y reporte Markdown" class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium bg-obsidian-850 hover:bg-obsidian-800 text-slate-300 hover:text-white border border-slate-700/80 transition">
               <span>Pantalla Completa</span>
               <svg class="w-3.5 h-3.5 text-cyan-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6M15 3h6v6M10 14L21 3"/></svg>
             </a>
@@ -318,9 +341,9 @@
           <div class="w-11 h-11 rounded-xl bg-cyan-500/10 border border-cyan-500/25 flex items-center justify-center text-cyan-400 font-mono text-sm font-bold mb-5 group-hover:scale-105 transition">
             01
           </div>
-          <h3 class="text-lg font-semibold text-white mb-2">Mapeo en Bóveda Espacial</h3>
+          <h3 class="text-lg font-semibold text-white mb-2">Importa tu JSON</h3>
           <p class="text-sm text-slate-400 leading-relaxed">
-            Importa el JSON de tu flujo o conéctalo vía API. SoFs reconstruye triggers, bifurcaciones, llamadas HTTP y agentes IA en un lienzo interconectado por secciones lógicas.
+            Pega o sube el JSON exportado de tu workflow de n8n. No conectas cuentas ni claves de API. SoFs reconstruye triggers, llamadas HTTP y agentes de IA en un mapa por secciones (la bóveda también lee blueprints de Make, en modo básico).
           </p>
         </div>
 
@@ -329,9 +352,9 @@
           <div class="w-11 h-11 rounded-xl bg-cyan-500/10 border border-cyan-500/25 flex items-center justify-center text-cyan-400 font-mono text-sm font-bold mb-5 group-hover:scale-105 transition">
             02
           </div>
-          <h3 class="text-lg font-semibold text-white mb-2">Despliegue de Sonda + Presets</h3>
+          <h3 class="text-lg font-semibold text-white mb-2">Reglas por preset</h3>
           <p class="text-sm text-slate-400 leading-relaxed">
-            Elige un perfil de auditoría. La sonda recorre sistemáticamente cada ruta, evalúa dependencias y muestra su razonamiento explícito al detectar puntos ciegos.
+            Elige qué revisar: resiliencia, seguridad, entrega a clientes o costo. Un motor de reglas deterministas recorre cada nodo y te dice qué encontró y por qué.
           </p>
         </div>
 
@@ -342,7 +365,7 @@
           </div>
           <h3 class="text-lg font-semibold text-white mb-2">Informe Simplificado Accionable</h3>
           <p class="text-sm text-slate-400 leading-relaxed">
-            Recibe un índice de salud (0–100), impacto en cascada de cada anomalía y pasos concretos de corrección listos para aplicar o compartir con tu equipo o cliente.
+            Recibes un puntaje de 0 a 100 y, por cada hallazgo, el nodo afectado y el arreglo concreto. Lo copias como Markdown para adjuntarlo a tu entrega.
           </p>
         </div>
       </div>
@@ -355,82 +378,59 @@
   <section id="presets" class="py-20 border-t border-slate-800/60">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
       <div class="text-center max-w-2xl mx-auto mb-14">
-        <span class="font-mono text-xs uppercase tracking-widest text-cyan-400">Reglas Especializadas</span>
+        <span class="font-mono text-xs uppercase tracking-widest text-cyan-400">Reglas especializadas</span>
         <h2 class="text-2xl sm:text-4xl font-bold text-white tracking-tight mt-2 mb-4">
-          Presets de auditoría listos para cada etapa
+          Cuatro lentes de auditoría, 14 reglas activas
         </h2>
         <p class="text-sm sm:text-base text-slate-400">
-          Cambia el lente de inspección de la sonda sin configurar decenas de reglas manuales.
+          Cada regla es determinista: el mismo flujo siempre da el mismo resultado. Cambia de lente sin configurar nada.
         </p>
       </div>
 
       <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5">
-        <!-- Preset 1 -->
-        <div class="rounded-2xl bg-obsidian-900 border border-slate-800 p-5 flex flex-col justify-between">
-          <div>
-            <div class="flex items-center justify-between mb-4">
-              <span class="px-2.5 py-1 rounded-md bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 font-mono text-[11px]">PRODUCCIÓN</span>
-              <span class="font-mono text-xs text-slate-500">14 reglas</span>
-            </div>
-            <h3 class="text-base font-semibold text-white mb-2">Resiliencia & Errores</h3>
-            <p class="text-xs text-slate-400 leading-relaxed mb-4">
-              Detecta webhooks sin timeout, ausencia de Dead Letter Queues, bucles infinitos y mutaciones sin llaves de idempotencia.
-            </p>
-          </div>
-          <div class="pt-3 border-t border-slate-800/80 font-mono text-[11px] text-slate-300">
-            Ideal antes de pasar a vivo
-          </div>
-        </div>
-
-        <!-- Preset 2 -->
-        <div class="rounded-2xl bg-obsidian-900 border border-slate-800 p-5 flex flex-col justify-between">
-          <div>
-            <div class="flex items-center justify-between mb-4">
-              <span class="px-2.5 py-1 rounded-md bg-rose-500/10 text-rose-400 border border-rose-500/20 font-mono text-[11px]">COMPLIANCE</span>
-              <span class="font-mono text-xs text-slate-500">11 reglas</span>
-            </div>
-            <h3 class="text-base font-semibold text-white mb-2">Seguridad & PII</h3>
-            <p class="text-xs text-slate-400 leading-relaxed mb-4">
-              Rastrea datos personales enviados sin redactar a LLMs externos, tokens expuestos en URLs y logs con payloads sensibles.
-            </p>
-          </div>
-          <div class="pt-3 border-t border-slate-800/80 font-mono text-[11px] text-slate-300">
-            Protección de datos y secretos
-          </div>
-        </div>
-
-        <!-- Preset 3 -->
-        <div class="rounded-2xl bg-obsidian-900 border border-slate-800 p-5 flex flex-col justify-between">
-          <div>
-            <div class="flex items-center justify-between mb-4">
-              <span class="px-2.5 py-1 rounded-md bg-amber-500/10 text-amber-400 border border-amber-500/20 font-mono text-[11px]">FINOPS</span>
-              <span class="font-mono text-xs text-slate-500">9 reglas</span>
-            </div>
-            <h3 class="text-base font-semibold text-white mb-2">Rendimiento & Costo API</h3>
-            <p class="text-xs text-slate-400 leading-relaxed mb-4">
-              Identifica modelos LLM sobredimensionados, llamadas secuenciales paralelizables y consultas repetitivas sin caché.
-            </p>
-          </div>
-          <div class="pt-3 border-t border-slate-800/80 font-mono text-[11px] text-slate-300">
-            Reduce latencia y factura mensual
-          </div>
-        </div>
-
-        <!-- Preset 4 -->
         <div class="rounded-2xl bg-obsidian-900 border border-slate-800 p-5 flex flex-col justify-between">
           <div>
             <div class="flex items-center justify-between mb-4">
               <span class="px-2.5 py-1 rounded-md bg-cyan-500/10 text-cyan-400 border border-cyan-500/20 font-mono text-[11px]">HANDOFF</span>
-              <span class="font-mono text-xs text-slate-500">10 reglas</span>
+              <span class="font-mono text-xs text-slate-400">5 reglas</span>
             </div>
-            <h3 class="text-base font-semibold text-white mb-2">Pre-Flight & Entrega</h3>
-            <p class="text-xs text-slate-400 leading-relaxed mb-4">
-              Verifica nodos huérfanos, variables sin valor por defecto y documentación mínima para entregar flujos limpios a clientes.
-            </p>
+            <h3 class="text-base font-semibold text-white mb-2">Pre-Flight &amp; Entrega</h3>
+            <p class="text-xs text-slate-400 leading-relaxed mb-4">Detecta nodos sin conexiones, nodos deshabilitados, nombres por defecto, falta de notas y llamadas sin timeout, para entregar flujos limpios a tus clientes.</p>
           </div>
-          <div class="pt-3 border-t border-slate-800/80 font-mono text-[11px] text-slate-300">
-            Estándar de calidad para agencias
+          <div class="pt-3 border-t border-slate-800/80 font-mono text-[11px] text-slate-300">Estándar de calidad para agencias</div>
+        </div>
+        <div class="rounded-2xl bg-obsidian-900 border border-slate-800 p-5 flex flex-col justify-between">
+          <div>
+            <div class="flex items-center justify-between mb-4">
+              <span class="px-2.5 py-1 rounded-md bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 font-mono text-[11px]">PRODUCCIÓN</span>
+              <span class="font-mono text-xs text-slate-400">4 reglas</span>
+            </div>
+            <h3 class="text-base font-semibold text-white mb-2">Resiliencia &amp; Errores</h3>
+            <p class="text-xs text-slate-400 leading-relaxed mb-4">Marca llamadas HTTP y de IA sin reintentos, cobros sin llave de idempotencia y workflows sin flujo de error configurado.</p>
           </div>
+          <div class="pt-3 border-t border-slate-800/80 font-mono text-[11px] text-slate-300">Ideal antes de pasar a vivo</div>
+        </div>
+        <div class="rounded-2xl bg-obsidian-900 border border-slate-800 p-5 flex flex-col justify-between">
+          <div>
+            <div class="flex items-center justify-between mb-4">
+              <span class="px-2.5 py-1 rounded-md bg-rose-500/10 text-rose-400 border border-rose-500/20 font-mono text-[11px]">COMPLIANCE</span>
+              <span class="font-mono text-xs text-slate-400">4 reglas</span>
+            </div>
+            <h3 class="text-base font-semibold text-white mb-2">Seguridad &amp; PII</h3>
+            <p class="text-xs text-slate-400 leading-relaxed mb-4">Busca webhooks sin autenticación, secretos escritos en el flujo o en la URL, datos personales hacia LLMs y payloads completos en mensajes.</p>
+          </div>
+          <div class="pt-3 border-t border-slate-800/80 font-mono text-[11px] text-slate-300">Protección de datos y secretos</div>
+        </div>
+        <div class="rounded-2xl bg-obsidian-900 border border-slate-800 p-5 flex flex-col justify-between">
+          <div>
+            <div class="flex items-center justify-between mb-4">
+              <span class="px-2.5 py-1 rounded-md bg-amber-500/10 text-amber-400 border border-amber-500/20 font-mono text-[11px]">FINOPS</span>
+              <span class="font-mono text-xs text-slate-400">1 regla · más en camino</span>
+            </div>
+            <h3 class="text-base font-semibold text-white mb-2">Rendimiento &amp; Costo API</h3>
+            <p class="text-xs text-slate-400 leading-relaxed mb-4">Hoy señala modelos de gama alta en pasos de IA. La detección de llamadas paralelizables y de caché llega en próximas versiones.</p>
+          </div>
+          <div class="pt-3 border-t border-slate-800/80 font-mono text-[11px] text-slate-300">En construcción</div>
         </div>
       </div>
     </div>
@@ -454,7 +454,7 @@
           <ul class="space-y-3 text-sm text-slate-300">
             <li class="flex items-start gap-2.5">
               <span class="w-5 h-5 rounded-full bg-emerald-500/15 text-emerald-400 flex items-center justify-center text-xs shrink-0 mt-0.5">✓</span>
-              <span><strong>Semáforo de salud instantáneo</strong> con historial comparativo entre auditorías.</span>
+              <span><strong>Semáforo de salud instantáneo</strong> con historial de auditorías en la bóveda (se guarda solo en tu navegador).</span>
             </li>
             <li class="flex items-start gap-2.5">
               <span class="w-5 h-5 rounded-full bg-emerald-500/15 text-emerald-400 flex items-center justify-center text-xs shrink-0 mt-0.5">✓</span>
@@ -462,7 +462,7 @@
             </li>
             <li class="flex items-start gap-2.5">
               <span class="w-5 h-5 rounded-full bg-emerald-500/15 text-emerald-400 flex items-center justify-center text-xs shrink-0 mt-0.5">✓</span>
-              <span><strong>Exportación limpia en Markdown o PDF</strong> lista para adjuntar en entregas.</span>
+              <span><strong>Exportación en Markdown</strong> lista para adjuntar a tus entregas.</span>
             </li>
           </ul>
         </div>
@@ -472,7 +472,7 @@
           <div class="rounded-2xl bg-obsidian-900 border border-slate-800 p-5 sm:p-7 shadow-2xl space-y-5">
             <div class="flex flex-wrap items-center justify-between gap-4 pb-4 border-b border-slate-800">
               <div>
-                <div class="text-[11px] font-mono text-cyan-400 uppercase">State of Flows // Reporte Certificado</div>
+                <div class="text-[11px] font-mono text-cyan-400 uppercase">State of Flows // Reporte de ejemplo (ilustrativo)</div>
                 <h3 class="text-lg font-bold text-white mt-0.5">Pipeline: Onboarding & Stripe Sync</h3>
               </div>
               <div class="flex items-center gap-3 bg-obsidian-950 border border-slate-800 rounded-xl px-3.5 py-2">
@@ -530,64 +530,76 @@
   <!-- ===================================================================== -->
   <section id="ecosistemas" class="py-20 border-t border-slate-800/60">
     <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-      <span class="font-mono text-xs uppercase tracking-widest text-slate-400">Agnóstico al Motor de Ejecución</span>
-      <h2 class="text-2xl sm:text-3xl font-bold text-white tracking-tight mt-2 mb-8">
-        Diseñado para tus herramientas de automatización y orquestación
-      </h2>
-
-      <div class="flex flex-wrap items-center justify-center gap-3 sm:gap-4 mb-16">
-        <span class="px-4 py-2 rounded-xl bg-obsidian-900 border border-slate-800 font-mono text-xs text-slate-300">n8n (JSON / API)</span>
-        <span class="px-4 py-2 rounded-xl bg-obsidian-900 border border-slate-800 font-mono text-xs text-slate-300">Make Blueprints</span>
-        <span class="px-4 py-2 rounded-xl bg-obsidian-900 border border-slate-800 font-mono text-xs text-slate-300">Zapier Workflows</span>
-        <span class="px-4 py-2 rounded-xl bg-obsidian-900 border border-slate-800 font-mono text-xs text-slate-300">LangGraph / Flowise</span>
-        <span class="px-4 py-2 rounded-xl bg-obsidian-900 border border-slate-800 font-mono text-xs text-slate-300">Webhooks & OpenAPI</span>
+      <span class="font-mono text-xs uppercase tracking-widest text-slate-400">Compatibilidad</span>
+      <h2 class="text-2xl sm:text-3xl font-bold text-white tracking-tight mt-2 mb-3">Empezamos por n8n</h2>
+      <p class="text-sm text-slate-400 max-w-xl mx-auto mb-8">Este es el estado real de cada integración hoy.</p>
+      <div class="flex flex-wrap items-center justify-center gap-3 sm:gap-4">
+        <span class="px-4 py-2 rounded-xl bg-obsidian-900 border border-slate-800 font-mono text-xs text-slate-300">n8n (JSON) <span class="text-emerald-400">· disponible</span></span>
+        <span class="px-4 py-2 rounded-xl bg-obsidian-900 border border-slate-800 font-mono text-xs text-slate-300">Make (blueprints) <span class="text-amber-400">· básico, en la bóveda</span></span>
+        <span class="px-4 py-2 rounded-xl bg-obsidian-900 border border-slate-800 font-mono text-xs text-slate-300">Zapier <span class="text-slate-400">· próximamente</span></span>
+        <span class="px-4 py-2 rounded-xl bg-obsidian-900 border border-slate-800 font-mono text-xs text-slate-300">LangGraph / Flowise <span class="text-slate-400">· próximamente</span></span>
+        <span class="px-4 py-2 rounded-xl bg-obsidian-900 border border-slate-800 font-mono text-xs text-slate-300">Webhooks &amp; OpenAPI <span class="text-slate-400">· próximamente</span></span>
       </div>
+    </div>
+  </section>
 
-      <!-- Banner CTA Final -->
-      <div class="rounded-3xl bg-gradient-to-b from-obsidian-850 to-obsidian-950 border border-cyan-500/30 p-8 sm:p-12 relative overflow-hidden">
+  <section id="fundador" class="py-20 border-t border-slate-800/60 scroll-mt-16">
+    <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="rounded-3xl bg-gradient-to-b from-obsidian-850 to-obsidian-950 border border-cyan-500/30 p-6 sm:p-10 relative overflow-hidden">
         <div class="absolute -top-24 left-1/2 -translate-x-1/2 w-96 h-48 bg-cyan-500/15 blur-[80px] pointer-events-none"></div>
-        <h3 class="text-2xl sm:text-4xl font-bold text-white tracking-tight mb-4 relative z-10">
-          Dale visión de rayos X a tus automatizaciones
-        </h3>
-        <p class="text-sm sm:text-base text-slate-400 max-w-xl mx-auto mb-8 relative z-10">
-          Únete a la lista de acceso anticipado de <strong class="text-white">State of Flows (SoFs)</strong> y sé de los primeros en auditar tus flujos con nuestra sonda espacial.
-        </p>
-
-        <form id="footerWaitlistForm" class="max-w-lg mx-auto space-y-3 relative z-10">
-          <div class="flex flex-col sm:flex-row gap-2.5">
-            <input
-              id="waitlistEmailInput"
-              name="email"
-              type="email"
-              required
-              placeholder="tu@empresa.com"
-              class="flex-1 px-4 py-3 rounded-xl bg-obsidian-950 border border-slate-700 text-sm text-white placeholder-slate-500 focus:outline-none focus:border-cyan-400"
-            />
-            <select
-              id="waitlistStackSelect"
-              name="stack"
-              aria-label="Stack principal"
-              class="px-3.5 py-3 rounded-xl bg-obsidian-950 border border-slate-700 text-xs font-mono text-slate-300 focus:outline-none focus:border-cyan-400 cursor-pointer"
-            >
-              <option value="n8n">Stack: n8n</option>
-              <option value="Make">Stack: Make</option>
-              <option value="Zapier">Stack: Zapier</option>
-              <option value="LangGraph / AI">Stack: AI Agents</option>
-              <option value="Custom / Webhooks">Stack: Custom API</option>
-            </select>
-            <button
-              id="waitlistSubmitBtn"
-              type="submit"
-              class="px-6 py-3 rounded-xl bg-cyan-500 hover:bg-cyan-400 text-slate-950 font-semibold text-sm shadow-[0_0_25px_rgba(34,211,238,0.3)] transition cursor-pointer shrink-0"
-            >
-              Solicitar Acceso
-            </button>
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-10 relative z-10">
+          <div class="space-y-4">
+            <span class="font-mono text-xs uppercase tracking-widest text-cyan-400">Acceso fundador · primeros 100</span>
+            <h2 class="text-2xl sm:text-4xl font-bold text-white tracking-tight">$10 USD una sola vez. Tuyo para siempre.</h2>
+            <p class="text-sm sm:text-base text-slate-400 leading-relaxed">
+              SoFs está en beta. A cambio de tu feedback temprano, conservas el acceso al motor base sin pagar mensualidades.
+            </p>
+            <ul class="space-y-2 text-sm text-slate-300">
+              <li class="flex items-start gap-2.5"><span class="text-emerald-400">✓</span><span>Análisis ilimitado de workflows n8n en tu navegador</span></li>
+              <li class="flex items-start gap-2.5"><span class="text-emerald-400">✓</span><span>Todas las reglas nuevas del motor base</span></li>
+              <li class="flex items-start gap-2.5"><span class="text-emerald-400">✓</span><span>Bóveda interactiva e historial local</span></li>
+              <li class="flex items-start gap-2.5"><span class="text-emerald-400">✓</span><span>Informe en Markdown para adjuntar a tus entregas</span></li>
+            </ul>
+            <p class="text-xs text-slate-400 leading-relaxed">
+              No incluye los futuros planes de pago: marca blanca para agencias, trabajo en equipo y monitoreo continuo.
+              Reembolso completo si en 14 días no te sirve.
+            </p>
           </div>
-        </form>
 
-        <p id="footerWaitlistMsg" class="hidden mt-4 text-xs font-mono text-emerald-400 relative z-10">
-          ✓ Registro confirmado. Te notificaremos cuando tu bóveda SoFs esté lista.
-        </p>
+          <div class="space-y-4">
+            <a id="founderCtaBtn" href="#fundador" class="w-full inline-flex items-center justify-center gap-2 px-6 py-3.5 rounded-xl text-sm font-semibold bg-cyan-500 hover:bg-cyan-400 text-slate-950 shadow-[0_0_30px_rgba(34,211,238,0.3)] transition cursor-pointer">
+              <span id="founderCtaLabel">Apartar mi lugar de fundador</span>
+            </a>
+            <p class="text-xs text-slate-400 text-center">o deja tu correo y te avisamos</p>
+
+            <form id="footerWaitlistForm" class="space-y-3" novalidate>
+              <div>
+                <label for="waitlistEmailInput" class="sr-only">Correo electrónico</label>
+                <input id="waitlistEmailInput" name="email" type="email" required autocomplete="email" placeholder="tu@empresa.com"
+                  class="w-full px-4 py-3 rounded-xl bg-obsidian-950 border border-slate-700 text-sm text-white placeholder-slate-400 focus:outline-none focus:border-cyan-400" />
+              </div>
+              <div>
+                <label for="waitlistStackSelect" class="sr-only">Stack principal</label>
+                <select id="waitlistStackSelect" name="stack" class="w-full px-3.5 py-3 rounded-xl bg-obsidian-950 border border-slate-700 text-xs font-mono text-slate-300 focus:outline-none focus:border-cyan-400 cursor-pointer">
+                  <option value="n8n">Stack principal: n8n</option>
+                  <option value="Make">Stack principal: Make</option>
+                  <option value="Zapier">Stack principal: Zapier</option>
+                  <option value="LangGraph / AI">Stack principal: Agentes de IA</option>
+                  <option value="Custom / Webhooks">Stack principal: API propia</option>
+                </select>
+              </div>
+              <label class="flex items-start gap-2.5 text-xs text-slate-300 cursor-pointer">
+                <input id="waitlistFounderCheck" type="checkbox" class="mt-0.5 accent-cyan-400" />
+                <span>Quiero ser fundador ($10 USD, pago único) y recibir el enlace de pago</span>
+              </label>
+              <input id="waitlistHoneypot" name="_gotcha" type="text" tabindex="-1" autocomplete="off" aria-hidden="true" class="hidden" />
+              <button id="waitlistSubmitBtn" type="submit" class="w-full px-6 py-3 rounded-xl bg-obsidian-850 hover:bg-obsidian-800 border border-slate-600 text-white font-semibold text-sm transition cursor-pointer">
+                Solicitar acceso
+              </button>
+            </form>
+            <p id="footerWaitlistMsg" role="status" class="hidden mt-4 text-xs font-mono relative z-10"></p>
+          </div>
+        </div>
       </div>
     </div>
   </section>
@@ -596,16 +608,16 @@
   <!-- FOOTER                                                                -->
   <!-- ===================================================================== -->
   <footer class="border-t border-slate-800/80 bg-obsidian-950 py-8">
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-slate-500">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-slate-400">
       <div class="flex items-center gap-2">
         <span class="w-2 h-2 rounded-full bg-cyan-400"></span>
         <span class="font-semibold text-slate-300">State of Flows (SoFs)</span>
         <span>· Observabilidad y Auditoría Visual</span>
       </div>
       <div class="flex items-center gap-4 font-mono text-[11px]">
-        <a href="prototype.html" class="text-cyan-400 hover:underline">Bóveda Full-Screen</a>
+        <a href="state-of-flows.html" class="text-cyan-400 hover:underline">Bóveda Full-Screen</a>
         <span>|</span>
-        <span>SYSTEM STATUS: NOMINAL // v0.9</span>
+        <span>v0.9 beta · análisis 100% local</span>
       </div>
     </div>
   </footer>
@@ -613,28 +625,36 @@
   <!-- ===================================================================== -->
   <!-- MODAL INTERACTIVO: SIMULADOR DE AUDITORÍA JSON RÁPIDO                 -->
   <!-- ===================================================================== -->
-  <div id="jsonAuditModal" class="hidden fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
-    <div class="bg-obsidian-900 border border-slate-700 rounded-2xl max-w-xl w-full p-5 sm:p-6 shadow-2xl space-y-4">
+  <div id="jsonAuditModal" class="hidden fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4" role="dialog" aria-modal="true" aria-labelledby="jsonModalTitle">
+    <div class="bg-obsidian-900 border border-slate-700 rounded-2xl max-w-2xl w-full max-h-[92vh] overflow-y-auto p-5 sm:p-6 shadow-2xl space-y-4">
       <div class="flex items-center justify-between">
         <div>
-          <span class="text-[10px] font-mono uppercase text-cyan-400">Analizador Estático Rápido</span>
-          <h3 class="text-base font-bold text-white">Pega el JSON de tu Flow (n8n / Make / Webhook)</h3>
+          <span class="text-[10px] font-mono uppercase text-cyan-400">Analizador estático · n8n</span>
+          <h3 id="jsonModalTitle" class="text-base font-bold text-white">Pega el JSON de tu workflow</h3>
         </div>
-        <button id="closeJsonModalBtn" class="p-1.5 rounded-lg bg-slate-800 text-slate-400 hover:text-white cursor-pointer">
+        <button id="closeJsonModalBtn" aria-label="Cerrar analizador" class="p-1.5 rounded-lg bg-slate-800 text-slate-400 hover:text-white cursor-pointer">
           <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6L6 18M6 6l12 12"/></svg>
         </button>
       </div>
 
-      <textarea id="jsonInputArea" rows="6" class="w-full rounded-xl bg-obsidian-950 border border-slate-800 p-3 font-mono text-xs text-slate-300 focus:outline-none focus:border-cyan-500" placeholder='{"name": "Sync Leads", "nodes": [{"type": "webhook"}, {"type": "http_request", "url": "https://api.crm.com"}]}'></textarea>
+      <p class="text-xs text-slate-400">Todo se analiza en tu navegador. Tu JSON no se envía a ningún servidor.</p>
 
-      <div id="jsonQuickResult" class="hidden rounded-xl bg-obsidian-950 border border-slate-800 p-3.5 text-xs space-y-1.5"></div>
+      <label for="jsonInputArea" class="sr-only">JSON del workflow</label>
+      <textarea id="jsonInputArea" rows="6" class="w-full rounded-xl bg-obsidian-950 border border-slate-800 p-3 font-mono text-xs text-slate-300 placeholder-slate-400 focus:outline-none focus:border-cyan-500" placeholder="En n8n abre tu workflow, selecciona todo (Ctrl/Cmd+A), copia (Ctrl/Cmd+C) y pega aquí. También puedes subir el archivo .json."></textarea>
+
+      <div class="flex flex-wrap items-center gap-2 text-xs text-slate-400">
+        <label class="px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-white font-medium cursor-pointer transition">
+          Subir .json
+          <input type="file" id="jsonFileInput" accept=".json,application/json" class="hidden" />
+        </label>
+        <button id="fillSampleJsonBtn" class="px-3 py-1.5 rounded-lg text-xs font-mono text-slate-300 hover:text-white cursor-pointer">Cargar ejemplo</button>
+      </div>
+
+      <div id="jsonQuickResult" role="status" class="hidden rounded-xl bg-obsidian-950 border border-slate-800 p-3.5 text-xs space-y-2.5 max-h-[45vh] overflow-y-auto"></div>
 
       <div class="flex items-center justify-end gap-2">
-        <button id="fillSampleJsonBtn" class="px-3 py-2 rounded-lg text-xs font-mono text-slate-400 hover:text-white cursor-pointer">
-          Cargar ejemplo
-        </button>
         <button id="analyzeJsonBtn" class="px-4 py-2 rounded-lg text-xs font-semibold bg-cyan-500 hover:bg-cyan-400 text-slate-950 cursor-pointer">
-          Escanear Estructura
+          Analizar workflow
         </button>
       </div>
     </div>
@@ -649,6 +669,211 @@
      * ========================================================================
      */
     const WAITLIST_ENDPOINT = "";
+    /** Enlace de pago del plan fundador (Stripe Payment Link, Lemon Squeezy, etc.). Si está vacío, el botón lleva al formulario. */
+    const FOUNDER_CHECKOUT_URL = "";
+
+/* ===== SoFs Engine v1 · análisis estático determinista de workflows n8n (corre 100% en el navegador) ===== */
+const SoFsEngine = (() => {
+  const PTS = { critical: 18, warning: 6, info: 2 };
+  const ORDER = { critical: 0, warning: 1, info: 2 };
+  const CAP_PER_RULE = 3; // máximo de hallazgos por regla que restan puntaje (evita que una regla repetida hunda todo)
+  const SECRET_RX = /(sk-[A-Za-z0-9_-]{20,}|sk_live_[A-Za-z0-9]{10,}|rk_live_[A-Za-z0-9]{10,}|xox[abp]-[A-Za-z0-9-]{10,}|gh[pousr]_[A-Za-z0-9]{30,}|AIza[0-9A-Za-z_-]{30,}|AKIA[0-9A-Z]{16})/;
+  const QUERY_SECRET_RX = /[?&](api[_-]?key|apikey|access[_-]?token|token|secret|password|auth|key)=([^&#\s]+)/i;
+  const PAY_RX = /(stripe\.com|paypal\.com|mercadopago|openpay|conekta|adyen|braintreegateway|squareup|paddle\.com|lemonsqueezy|razorpay|checkout\.com)/i;
+  const PII_HINT_RX = /(e-?mail|correo|phone|tel[eé]fono|celular|curp|\brfc\b|\bssn\b|address|direcci[oó]n|nombre completo|full ?name|tarjeta|credit ?card)/i;
+  const WHOLE_OBJ_RX = /\{\{\s*(\$json|\$input\.item\.json|\$input\.first\(\)\.json)\s*\}\}|JSON\.stringify\(\s*\$json\s*\)/;
+  const SANITIZER_RX = /(redact|sanitiz|sanitis|mask|anonym|anonim|presidio|scrub|tokeniz|\bpii\b)/i;
+  const DEFAULT_NAME_RX = /^(HTTP Request|Code|Set|Edit Fields|If|IF|Switch|Merge|Webhook|Function|Slack|Gmail|OpenAI|Stripe|Postgres|Google Sheets|Wait)\s?\d*$/;
+
+  const lastSeg = t => String(t || '').split('.').pop();
+  const isExpr = v => typeof v === 'string' && (v.startsWith('=') || v.includes('{{'));
+  const escapeHtml = s => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+  const mask = s => String(s).slice(0, 4) + '…';
+
+  function walk(o, fn, key = '') {
+    if (o == null) return;
+    if (typeof o === 'string') { fn(key, o); return; }
+    if (Array.isArray(o)) { o.forEach(v => walk(v, fn, key)); return; }
+    if (typeof o === 'object') Object.entries(o).forEach(([k, v]) => walk(v, fn, k));
+  }
+
+  function parse(raw) {
+    let data;
+    try { data = JSON.parse(raw); } catch (e) { throw new Error('Eso no es un JSON válido. Revisa llaves, comas y comillas (copia el workflow completo desde n8n: Ctrl/Cmd+A, Ctrl/Cmd+C).'); }
+    if (!data || typeof data !== 'object' || Array.isArray(data)) throw new Error('El JSON debe ser un objeto de workflow, no una lista ni un valor suelto.');
+    return data;
+  }
+  function detect(data) {
+    if (Array.isArray(data.nodes)) return 'n8n';
+    if (Array.isArray(data.flow)) return 'make';
+    return null;
+  }
+
+  function analyze(data) {
+    const findings = [];
+    const add = (id, preset, severity, node, title, detail, fix) =>
+      findings.push({ id, preset, severity, node: node ? node.name : null, title, detail, fix, thought: `${node ? node.name : 'Workflow'} → ${title}` });
+
+    const all = (data.nodes || []).filter(n => n && typeof n === 'object');
+    const nodes = all.filter(n => !/stickyNote/i.test(n.type || ''));
+    const stickies = all.length - nodes.length;
+    const T = n => lastSeg(n.type);
+    const P = n => n.parameters || {};
+    const isWebhook = n => /^webhook$/i.test(T(n));
+    const isHttp = n => /^httpRequest$/i.test(T(n));
+    const isLlm = n => (/langchain/i.test(n.type || '') && /^(agent|chainLlm|openAi|chainSummarization|chainRetrievalQa|informationExtractor|sentimentAnalysis|textClassifier|anthropic|googleGemini|mistralAi)$/i.test(T(n))) || /^(openAi|anthropic|googleGemini|mistralAi|perplexity|deepSeek)$/i.test(T(n));
+    const isNotify = n => /^(slack|gmail|emailSend|telegram|discord|whatsApp|twilio|sendGrid|microsoftTeams|mattermost)$/i.test(T(n));
+    const isPayNode = n => /^(stripe|payPal|mercadoPago)$/i.test(T(n));
+    const hasErrPath = n => !!n.retryOnFail || !!n.continueOnFail || /^continue/i.test(n.onError || '');
+
+    const hasPayment = nodes.some(n => isPayNode(n) || (isHttp(n) && PAY_RX.test(String(P(n).url || ''))));
+    const hasLlm = nodes.some(isLlm);
+    const sanitizer = nodes.some(n => SANITIZER_RX.test(`${n.name || ''} ${n.type || ''}`));
+
+    nodes.forEach(n => {
+      const p = P(n); const pStr = JSON.stringify(p);
+
+      // SEC-WEBHOOK-AUTH
+      if (isWebhook(n) && (!p.authentication || p.authentication === 'none')) {
+        const sens = hasPayment || hasLlm;
+        add('SEC-WEBHOOK-AUTH', 'security', sens ? 'critical' : 'warning', n, 'Webhook público sin autenticación',
+          'Cualquiera que conozca la URL puede disparar este flujo' + (sens ? ', y este flujo ejecuta cobros o llamadas a IA.' : '.'),
+          'Activa autenticación en el nodo Webhook (Header Auth o JWT) o valida una firma HMAC en el primer nodo.');
+      }
+
+      // SEC-SECRET (secretos literales, tokens en URL, cabeceras con token fijo)
+      let secretMsg = null, secretSev = 'critical';
+      walk(p, (k, v) => {
+        if (secretMsg) return;
+        const m = !isExpr(v) && v.match(SECRET_RX);
+        if (m) { secretMsg = `Hay un valor con forma de clave (${mask(m[0])}) escrito directamente en el flujo.`; return; }
+        const q = v.match(QUERY_SECRET_RX);
+        if (q) {
+          const dyn = /^(\{\{|\$|%7B)/.test(q[2]);
+          secretMsg = dyn ? `La URL envía "${q[1]}" como parámetro de consulta; queda en logs y proxies.` : `La URL lleva "${q[1]}" con un valor fijo en el parámetro de consulta.`;
+          secretSev = dyn ? 'warning' : 'critical';
+        }
+      });
+      const hdrs = (p.headerParameters && p.headerParameters.parameters) || [];
+      hdrs.forEach(h => {
+        if (!secretMsg && h && /^(authorization|x-api-key|api-key|x-auth-token)$/i.test(h.name || '') && typeof h.value === 'string' && !isExpr(h.value) && h.value.length > 8) {
+          secretMsg = `La cabecera ${h.name} tiene un valor fijo escrito en el flujo.`; secretSev = 'critical';
+        }
+      });
+      if (secretMsg) add('SEC-SECRET', 'security', secretSev, n, 'Credencial expuesta en la configuración', secretMsg,
+        'Mueve el secreto a una credencial de n8n (o variable de entorno) y envíalo por cabecera, no por URL. Si ya compartiste este JSON, rota la clave.');
+
+      // SEC-PII-LLM
+      if (isLlm(n) && !sanitizer && (PII_HINT_RX.test(pStr) || WHOLE_OBJ_RX.test(pStr)))
+        add('SEC-PII-LLM', 'security', 'warning', n, 'Posibles datos personales enviados a un LLM externo',
+          'El prompt incluye campos que parecen datos personales (o el objeto completo) y no se detectó un paso de redacción antes. Es una heurística: revisa el contenido real.',
+          'Añade un paso que enmascare correo, teléfono, CURP/RFC antes del LLM, o envía solo los campos necesarios.');
+
+      // SEC-LOG-PAYLOAD
+      if (isNotify(n) && WHOLE_OBJ_RX.test(pStr))
+        add('SEC-LOG-PAYLOAD', 'security', 'warning', n, 'El mensaje vuelca el payload completo',
+          'Este nodo envía el objeto completo ({{ $json }}), que puede incluir datos personales o secretos, a un canal de mensajería.',
+          'Envía solo los campos necesarios (ID, estado, resumen) en lugar del objeto completo.');
+
+      // RES-IDEMPOTENCY
+      const method = String(p.method || 'GET').toUpperCase();
+      if (isHttp(n) && /^(POST|PUT|PATCH|DELETE)$/.test(method) && PAY_RX.test(String(p.url || '')) && !/idempotency/i.test(pStr))
+        add('RES-IDEMPOTENCY', 'resilience', 'critical', n, 'Cobro sin llave de idempotencia',
+          'Un reintento por timeout puede duplicar el cobro o la suscripción' + (n.retryOnFail ? ' (y este nodo tiene reintentos activos).' : '.'),
+          'Añade la cabecera Idempotency-Key con un valor estable, por ejemplo el ID del evento: {{ $json.id }}.');
+      if (isPayNode(n) && (!p.operation || /create|charge|refund|capture|update/i.test(String(p.operation))))
+        add('RES-IDEMPOTENCY', 'resilience', 'warning', n, 'Cobro o alta sin protección visible contra duplicados',
+          'El nodo nativo no muestra una llave de idempotencia. Si el flujo se reejecuta, podría repetir la operación.',
+          'Verifica que exista una deduplicación previa (guardar el event_id y salir si ya se procesó) o usa HTTP Request con Idempotency-Key.');
+
+      // RES-RETRY / RES-LLM-FALLBACK
+      if (isHttp(n) && !hasErrPath(n))
+        add('RES-RETRY', 'resilience', 'warning', n, 'Llamada externa sin reintentos',
+          'Un error 429/502 o un corte de red detiene el flujo en este punto.',
+          'Activa "Retry On Fail" en Settings del nodo (3 intentos, 2000 ms) o enruta el error a una rama de recuperación.');
+      if (isLlm(n) && !hasErrPath(n))
+        add('RES-LLM-FALLBACK', 'resilience', 'warning', n, 'Llamada a IA sin reintento ni ruta alterna',
+          'Si el proveedor responde con límite de cuota o error, el flujo se detiene sin respaldo.',
+          'Activa reintentos con espera y define una rama alterna (respuesta por defecto o cola de revisión).');
+
+      // HND-TIMEOUT
+      if (isHttp(n) && !(p.options && p.options.timeout))
+        add('HND-TIMEOUT', 'handoff', 'info', n, 'Sin timeout explícito', 'No se definió un tiempo máximo de espera para esta llamada.',
+          'En Options del nodo agrega Timeout (por ejemplo 10000 ms) para evitar ejecuciones colgadas.');
+
+      // PERF-LLM-TIER
+      if (isLlm(n)) {
+        const m = pStr.match(/(gpt-4[\w.\-]*|o1[\w\-]*|o3[\w\-]*|claude-[\w.\-]*opus[\w.\-]*)/i);
+        if (m && !/mini|nano|haiku|flash/i.test(m[0]))
+          add('PERF-LLM-TIER', 'performance', 'info', n, 'Modelo de gama alta configurado', `Este nodo usa ${m[0]}. Para clasificaciones o extracciones simples suele bastar un modelo más pequeño.`,
+            'Prueba un modelo menor en este paso y compara calidad y costo.');
+      }
+
+      // HND-DISABLED
+      if (n.disabled) add('HND-DISABLED', 'handoff', 'info', n, 'Nodo deshabilitado', 'El nodo está apagado pero sigue en el flujo.', 'Elimínalo o documenta por qué se queda antes de entregar.');
+    });
+
+    // RES-ERRORFLOW
+    const hasErrTrigger = nodes.some(n => /errorTrigger/i.test(n.type || ''));
+    if (!(data.settings && data.settings.errorWorkflow) && !hasErrTrigger)
+      add('RES-ERRORFLOW', 'resilience', 'warning', null, 'Sin workflow de error configurado', 'Si algo falla en producción, nadie recibe un aviso.',
+        'Crea un workflow con Error Trigger (aviso a Slack o correo) y selecciónalo en Settings → Error Workflow.');
+
+    // HND-ORPHAN
+    if (nodes.length > 1) {
+      const linked = new Set();
+      Object.entries(data.connections || {}).forEach(([src, outs]) => {
+        Object.values(outs || {}).forEach(branches => (branches || []).forEach(br => (br || []).forEach(c => { if (c && c.node) { linked.add(src); linked.add(c.node); } })));
+      });
+      nodes.forEach(n => { if (!linked.has(n.name) && !n.disabled) add('HND-ORPHAN', 'handoff', 'info', n, 'Nodo sin conexiones', 'No tiene entradas ni salidas: puede ser un resto de pruebas.', 'Conéctalo o elimínalo antes de entregar.'); });
+    }
+
+    // HND-NAMES / HND-DOCS (a nivel de workflow)
+    const defaults = nodes.filter(n => DEFAULT_NAME_RX.test(String(n.name || '').trim()));
+    if (defaults.length >= 3) add('HND-NAMES', 'handoff', 'info', null, 'Nombres de nodo por defecto', `${defaults.length} nodos conservan su nombre original (por ejemplo "${defaults[0].name}"), lo que dificulta entender el flujo.`, 'Renombra cada nodo con lo que hace ("Cobrar suscripción", "Clasificar lead").');
+    if (!stickies && nodes.length >= 5) add('HND-DOCS', 'handoff', 'info', null, 'Sin notas de documentación', 'El flujo no tiene Sticky Notes que expliquen su propósito.', 'Añade una nota con propósito, entradas, salidas y responsable.');
+
+    // Puntaje con tope por regla
+    const seen = {}; let deduction = 0;
+    findings.slice().sort((a, b) => ORDER[a.severity] - ORDER[b.severity]).forEach(f => {
+      seen[f.id] = (seen[f.id] || 0) + 1;
+      if (seen[f.id] <= CAP_PER_RULE) deduction += PTS[f.severity];
+    });
+    const score = Math.max(0, 100 - deduction);
+    const counts = { critical: 0, warning: 0, info: 0 };
+    findings.forEach(f => counts[f.severity]++);
+    const verdict = score >= 85 ? 'Listo para entregar' : score >= 60 ? 'Requiere ajustes' : 'Riesgo alto';
+    findings.sort((a, b) => ORDER[a.severity] - ORDER[b.severity]);
+    return { engine: 'n8n', name: data.name || 'workflow sin nombre', nodeCount: nodes.length, findings, counts, score, verdict };
+  }
+
+  function redact(obj) {
+    const SENS_KEY = /^(password|secret|apikey|api_key|token|accesstoken|authorization|clientsecret)$/i;
+    const rec = (v, key = '') => {
+      if (v == null) return v;
+      if (typeof v === 'string') return (SENS_KEY.test(key) || (!isExpr(v) && SECRET_RX.test(v))) ? '[REDACTED]' : v;
+      if (Array.isArray(v)) {
+        if (v.length && v.every(x => x && typeof x === 'object' && 'name' in x && 'value' in x))
+          return v.map(x => ({ ...x, value: /^(authorization|x-api-key|api-key|x-auth-token)$/i.test(x.name) && !isExpr(x.value) ? '[REDACTED]' : rec(x.value, 'value') }));
+        return v.map(x => rec(x, key));
+      }
+      if (typeof v === 'object') return Object.fromEntries(Object.entries(v).map(([k, x]) => [k, rec(x, k)]));
+      return v;
+    };
+    return rec(obj);
+  }
+
+  function summary(res, url) {
+    const L = [`# State of Flows — ${res.name}`, `**Puntaje:** ${res.score}/100 (${res.verdict}) · ${res.nodeCount} nodos · ${res.counts.critical} críticos, ${res.counts.warning} advertencias, ${res.counts.info} notas`, ''];
+    res.findings.forEach(f => L.push(`- [${f.severity.toUpperCase()}] ${f.node ? f.node + ': ' : ''}${f.title}. FIX: ${f.fix}`));
+    if (url) L.push('', `Auditado con State of Flows · ${url}`);
+    return L.join('\n');
+  }
+
+  return { parse, detect, analyze, redact, summary, escapeHtml, SECRET_RX };
+})();
+if (typeof module !== 'undefined') module.exports = SoFsEngine;
+
 
     /**
      * ========================================================================
@@ -877,85 +1102,167 @@
     document.getElementById('runDemoScanBtn').addEventListener('click', runHeroScan);
     document.getElementById('demoPresetSelect').addEventListener('change', runHeroScan);
 
-    // Waitlist con envío real a endpoint (Formspree / Apps Script) + respaldo local
-    document.getElementById('openWaitlistBtn').addEventListener('click', () => {
-      document.getElementById('footerWaitlistForm').scrollIntoView({ behavior: 'smooth', block: 'center' });
-      document.getElementById('waitlistEmailInput').focus();
-    });
+    // ===== Utilidades =====
+    const $ = (id) => document.getElementById(id);
+    const esc = SoFsEngine.escapeHtml;
 
-    document.getElementById('footerWaitlistForm').addEventListener('submit', async (e) => {
+    // ===== Acceso fundador y lista de espera =====
+    const waitlistForm = $('footerWaitlistForm');
+    const waitlistMsg = $('footerWaitlistMsg');
+    function showWaitlistMsg(text, kind) {
+      waitlistMsg.textContent = text;
+      waitlistMsg.className = 'mt-4 text-xs font-mono relative z-10 ' + (kind === 'ok' ? 'text-emerald-400' : 'text-amber-400');
+    }
+    function focusWaitlist(asFounder) {
+      if (asFounder) $('waitlistFounderCheck').checked = true;
+      $('fundador').scrollIntoView({ behavior: 'smooth', block: 'start' });
+      setTimeout(() => $('waitlistEmailInput').focus({ preventScroll: true }), 450);
+    }
+    $('openWaitlistBtn').addEventListener('click', () => focusWaitlist(true));
+
+    const founderBtn = $('founderCtaBtn');
+    if (FOUNDER_CHECKOUT_URL) {
+      founderBtn.href = FOUNDER_CHECKOUT_URL; founderBtn.target = '_blank'; founderBtn.rel = 'noopener';
+      $('founderCtaLabel').textContent = 'Pagar $10 y ser fundador';
+    } else {
+      founderBtn.addEventListener('click', (e) => { e.preventDefault(); focusWaitlist(true); });
+    }
+
+    waitlistForm.addEventListener('submit', async (e) => {
       e.preventDefault();
-      const email = document.getElementById('waitlistEmailInput').value.trim();
-      const stack = document.getElementById('waitlistStackSelect').value;
-      const submitBtn = document.getElementById('waitlistSubmitBtn');
-      const msgEl = document.getElementById('footerWaitlistMsg');
+      if ($('waitlistHoneypot').value) return; // bot
+      const emailInput = $('waitlistEmailInput');
+      if (!emailInput.checkValidity()) { showWaitlistMsg('Escribe un correo válido.', 'warn'); emailInput.focus(); return; }
+      const email = emailInput.value.trim();
+      const stack = $('waitlistStackSelect').value;
+      const founder = $('waitlistFounderCheck').checked;
+      const btn = $('waitlistSubmitBtn');
 
-      submitBtn.disabled = true;
-      submitBtn.textContent = 'Registrando...';
-
-      try {
-        if (WAITLIST_ENDPOINT) {
-          await fetch(WAITLIST_ENDPOINT, {
-            method: 'POST',
-            headers: { 'Accept': 'application/json', 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              email,
-              stack,
-              source: 'State of Flows Landing',
-              timestamp: new Date().toISOString()
-            })
-          });
-        }
-        msgEl.textContent = `✓ Registro confirmado para ${email} (${stack}). Te notificaremos pronto.`;
-        msgEl.className = 'mt-4 text-xs font-mono text-emerald-400 relative z-10';
-        e.target.reset();
-      } catch (err) {
-        msgEl.textContent = '⚠ No se pudo conectar al servidor en este momento. Intenta de nuevo.';
-        msgEl.className = 'mt-4 text-xs font-mono text-amber-400 relative z-10';
-      } finally {
-        msgEl.classList.remove('hidden');
-        submitBtn.disabled = false;
-        submitBtn.textContent = 'Solicitar Acceso';
-      }
-    });
-
-    const jsonModal = document.getElementById('jsonAuditModal');
-    document.getElementById('openJsonModalBtn').addEventListener('click', () => jsonModal.classList.remove('hidden'));
-    document.getElementById('closeJsonModalBtn').addEventListener('click', () => jsonModal.classList.add('hidden'));
-
-    document.getElementById('fillSampleJsonBtn').addEventListener('click', () => {
-      document.getElementById('jsonInputArea').value = JSON.stringify({
-        flow_name: "crm_lead_router",
-        trigger: { type: "webhook", auth: "query_token" },
-        steps: [
-          { id: "enrich", type: "http", url: "https://api.clearbit.com/v2", retry: false },
-          { id: "classify", type: "openai", model: "gpt-4o", pii_redacted: false },
-          { id: "billing", type: "stripe_charge", idempotency_key: null }
-        ]
-      }, null, 2);
-    });
-
-    document.getElementById('analyzeJsonBtn').addEventListener('click', () => {
-      const raw = document.getElementById('jsonInputArea').value.trim();
-      const box = document.getElementById('jsonQuickResult');
-      box.classList.remove('hidden');
-
-      if (!raw) {
-        box.innerHTML = `<span class="text-amber-400 font-mono">⚠ Pega un objeto JSON o haz clic en "Cargar ejemplo" para analizar.</span>`;
+      if (!WAITLIST_ENDPOINT) {
+        console.warn('SoFs: WAITLIST_ENDPOINT está vacío, el registro NO se guardó. Configúralo con Formspree, Web3Forms o Apps Script.');
+        showWaitlistMsg('Todavía no podemos guardar registros: el formulario está en configuración. Tu correo no se envió; vuelve en unos días.', 'warn');
         return;
       }
-
-      const hasRetry = /retry["']?\s*:\s*true/i.test(raw);
-      const hasIdempotency = /idempotency/i.test(raw) && !/idempotency_key["']?\s*:\s*null/i.test(raw);
-      const hasPii = /pii_redacted["']?\s*:\s*true/i.test(raw);
-
-      box.innerHTML = `
-        <div class="font-mono text-cyan-400 font-semibold mb-1">Diagnóstico Preliminar SoFs:</div>
-        <div class="${hasRetry ? 'text-emerald-400' : 'text-amber-400'}">• Política de reintentos: ${hasRetry ? 'Detectada' : 'No detectada (riesgo ante fallos 502/429)'}</div>
-        <div class="${hasIdempotency ? 'text-emerald-400' : 'text-rose-400'}">• Idempotencia en mutaciones: ${hasIdempotency ? 'Configurada' : 'Ausente (riesgo de duplicidad)'}</div>
-        <div class="${hasPii ? 'text-emerald-400' : 'text-rose-400'}">• Protección PII previa a IA: ${hasPii ? 'Activa' : 'Sin sanitización detectada'}</div>
-      `;
+      btn.disabled = true; btn.textContent = 'Enviando…';
+      try {
+        const res = await fetch(WAITLIST_ENDPOINT, {
+          method: 'POST',
+          headers: { 'Accept': 'application/json', 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email, stack, plan: founder ? 'fundador' : 'lista de espera', source: 'State of Flows Landing', timestamp: new Date().toISOString() })
+        });
+        if (!res.ok) throw new Error('HTTP ' + res.status);
+        showWaitlistMsg(`Listo, ${email}. Te escribiremos cuando abramos el acceso${founder ? ' con el enlace de pago de fundador' : ''}.`, 'ok');
+        waitlistForm.reset();
+      } catch (err) {
+        showWaitlistMsg('No se pudo enviar tu registro. Revisa tu conexión e inténtalo de nuevo.', 'warn');
+      } finally {
+        btn.disabled = false; btn.textContent = 'Solicitar acceso';
+      }
     });
+
+    // ===== Analizador de workflows =====
+    const jsonModal = $('jsonAuditModal');
+    const jsonInput = $('jsonInputArea');
+    const jsonBox = $('jsonQuickResult');
+    let lastFocus = null, lastResult = null;
+
+    function openJsonModal() { lastFocus = document.activeElement; jsonModal.classList.remove('hidden'); jsonInput.focus(); }
+    function closeJsonModal() { jsonModal.classList.add('hidden'); if (lastFocus && lastFocus.focus) lastFocus.focus(); }
+    $('openJsonModalBtn').addEventListener('click', openJsonModal);
+    $('closeJsonModalBtn').addEventListener('click', closeJsonModal);
+    jsonModal.addEventListener('click', (e) => { if (e.target === jsonModal) closeJsonModal(); });
+    document.addEventListener('keydown', (e) => { if (e.key === 'Escape' && !jsonModal.classList.contains('hidden')) closeJsonModal(); });
+
+    const SAMPLE_N8N = {
+      name: 'Enrutador de leads CRM',
+      nodes: [
+        { name: 'Webhook Typeform', type: 'n8n-nodes-base.webhook', parameters: { path: 'leads-in', authentication: 'none' } },
+        { name: 'Enriquecer en Clearbit', type: 'n8n-nodes-base.httpRequest', parameters: { url: 'https://person.clearbit.com/v2/combined/find?api_key=abcd1234secretvalue' } },
+        { name: 'Calificar con OpenAI', type: '@n8n/n8n-nodes-langchain.openAi', parameters: { model: 'gpt-4o', prompt: '=Analiza este lead. Correo: {{ $json.email }}' } },
+        { name: 'Crear cliente en Stripe', type: 'n8n-nodes-base.stripe', parameters: { resource: 'customer', operation: 'create' } },
+        { name: 'Avisar en Slack', type: 'n8n-nodes-base.slack', parameters: { channel: '#ventas', text: '=Nuevo lead: {{ $json }}' } }
+      ],
+      connections: {
+        'Webhook Typeform': { main: [[{ node: 'Enriquecer en Clearbit' }]] },
+        'Enriquecer en Clearbit': { main: [[{ node: 'Calificar con OpenAI' }]] },
+        'Calificar con OpenAI': { main: [[{ node: 'Crear cliente en Stripe' }]] },
+        'Crear cliente en Stripe': { main: [[{ node: 'Avisar en Slack' }]] }
+      }
+    };
+    $('fillSampleJsonBtn').addEventListener('click', () => { jsonInput.value = JSON.stringify(SAMPLE_N8N, null, 2); jsonBox.classList.add('hidden'); });
+    $('jsonFileInput').addEventListener('change', (e) => {
+      const file = e.target.files && e.target.files[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = () => { jsonInput.value = String(reader.result || ''); runAnalysis(); };
+      reader.onerror = () => showBox('<span class="text-amber-400 font-mono">No se pudo leer el archivo. Inténtalo de nuevo o pega el contenido.</span>');
+      reader.readAsText(file);
+      e.target.value = '';
+    });
+
+    function showBox(html) { jsonBox.innerHTML = html; jsonBox.classList.remove('hidden'); }
+
+    const SEV = {
+      critical: { label: 'CRÍTICO', wrap: 'border-rose-500/30 bg-rose-500/5', tag: 'text-rose-300' },
+      warning:  { label: 'ADVERTENCIA', wrap: 'border-amber-500/30 bg-amber-500/5', tag: 'text-amber-300' },
+      info:     { label: 'NOTA', wrap: 'border-slate-700 bg-obsidian-900', tag: 'text-slate-300' }
+    };
+
+    function renderAudit(res) {
+      const good = res.score >= 85, mid = res.score >= 60;
+      const txt = good ? 'text-emerald-400' : mid ? 'text-amber-400' : 'text-rose-400';
+      const bdr = good ? 'border-emerald-500/40' : mid ? 'border-amber-500/40' : 'border-rose-500/40';
+      const c = res.counts;
+      const items = res.findings.map(f => `
+        <div class="rounded-lg border ${SEV[f.severity].wrap} p-3 space-y-1.5">
+          <div class="flex items-center justify-between gap-2">
+            <span class="text-xs font-semibold text-white">${esc(f.node || 'Workflow completo')}</span>
+            <span class="font-mono text-[10px] ${SEV[f.severity].tag} shrink-0">${SEV[f.severity].label} · ${esc(f.id)}</span>
+          </div>
+          <p class="text-xs text-slate-200">${esc(f.title)}. ${esc(f.detail)}</p>
+          <div class="text-[11px] font-mono text-cyan-300">FIX → ${esc(f.fix)}</div>
+        </div>`).join('');
+      showBox(`
+        <div class="flex items-center justify-between gap-3 pb-3 border-b border-slate-800">
+          <div>
+            <div class="font-mono text-[10px] text-slate-400">${esc(res.name)} · ${res.nodeCount} nodos</div>
+            <div class="text-sm font-semibold ${txt}">${esc(res.verdict)}</div>
+            <div class="text-[11px] text-slate-400 mt-0.5">${c.critical} críticos · ${c.warning} advertencias · ${c.info} notas</div>
+          </div>
+          <div class="w-14 h-14 rounded-xl border ${bdr} flex items-center justify-center font-mono text-lg font-bold ${txt}" aria-label="Puntaje ${res.score} de 100">${res.score}</div>
+        </div>
+        ${items || '<p class="text-xs text-emerald-300 py-2">Sin hallazgos con las 14 reglas activas. Eso no garantiza que el flujo esté libre de problemas: las reglas son estáticas.</p>'}
+        <div class="flex flex-wrap gap-2 pt-3 border-t border-slate-800">
+          <button id="copySummaryBtn" class="px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-xs font-medium text-white cursor-pointer">Copiar resumen</button>
+          <button id="openInVaultBtn" class="px-3 py-1.5 rounded-lg bg-obsidian-850 hover:bg-obsidian-800 border border-slate-700 text-xs font-medium text-cyan-300 cursor-pointer">Ver en la bóveda</button>
+        </div>
+        <p class="text-[10px] text-slate-400">Análisis estático con reglas deterministas. Puede dar falsos positivos y no ejecuta tu flujo.</p>`);
+      $('copySummaryBtn').addEventListener('click', () => {
+        const text = SoFsEngine.summary(lastResult, location.href.split('#')[0]);
+        const done = () => { $('copySummaryBtn').textContent = 'Resumen copiado'; };
+        if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(text).then(done, () => { $('copySummaryBtn').textContent = 'No se pudo copiar'; });
+        else $('copySummaryBtn').textContent = 'Tu navegador no permite copiar';
+      });
+      $('openInVaultBtn').addEventListener('click', () => {
+        try { sessionStorage.setItem('sofs_import', jsonInput.value.trim()); } catch (err) { /* sin almacenamiento: se abre la bóveda sin importar */ }
+        location.href = 'state-of-flows.html';
+      });
+    }
+
+    function runAnalysis() {
+      const raw = jsonInput.value.trim();
+      if (!raw) { showBox('<span class="text-amber-400 font-mono">Pega el JSON de tu workflow, sube el archivo o carga el ejemplo.</span>'); return; }
+      try {
+        const data = SoFsEngine.parse(raw);
+        const kind = SoFsEngine.detect(data);
+        if (kind === 'n8n') { lastResult = SoFsEngine.analyze(data); renderAudit(lastResult); }
+        else if (kind === 'make') showBox('<span class="text-amber-400">Reconocí un blueprint de Make. El análisis de Make todavía es básico y solo está en la <a href="state-of-flows.html" class="underline text-cyan-300">bóveda interactiva</a>. Para el análisis completo, pega un export de n8n.</span>');
+        else showBox('<span class="text-amber-400">No reconozco esta estructura. Un export de n8n es un objeto con las propiedades <code class="font-mono">nodes</code> y <code class="font-mono">connections</code>.</span>');
+      } catch (err) {
+        showBox(`<span class="text-amber-400">${esc(err.message)}</span>`);
+      }
+    }
+    $('analyzeJsonBtn').addEventListener('click', runAnalysis);
 
     window.addEventListener('load', () => {
       initHeroVault();
