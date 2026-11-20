@@ -964,20 +964,3 @@
   </script>
 </body>
 </html>
-```
-
----
-
-### Cómo activarlo en tu GitHub en 2 minutos:
-
-1. **Conecta la Bóveda Full-Screen:**
-   * En tu repositorio `stateofflows`, asegúrate de que el archivo del prototipo interactivo se llame **`prototype.html`** (renómbralo con el ícono del lápiz si aún tiene el nombre largo).
-   * Reemplaza el contenido de **`index.html`** con esta nueva versión que ya apunta a `prototype.html`.
-
-2. **Conecta tus correos gratis con Formspree (sin servidor):**
-   * Entra a [formspree.io](https://formspree.io) (tiene plan gratuito de 50 envíos/mes), crea un formulario nuevo llamado `State of Flows Waitlist` y copia el enlace que te da (algo como `https://formspree.io/f/xyza1234`).
-   * En tu nuevo `index.html`, busca la línea `const WAITLIST_ENDPOINT = "";` y pega tu enlace dentro de las comillas:
-     ```javascript
-     const WAITLIST_ENDPOINT = "https://formspree.io/f/xyza1234";
-     ```
-   * Guarda con **Commit changes** y en ~45 segundos tu página en vivo registrará tanto el correo como el stack principal (`n8n`, `Make`, `Zapier`, etc.) de cada visitante.
