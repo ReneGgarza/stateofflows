@@ -1,0 +1,1518 @@
+<!DOCTYPE html>
+<html lang="es" class="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>State of Flows (SoFs) — Bóveda de Auditoría Visual</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['Inter', 'system-ui', 'sans-serif'],
+            mono: ['JetBrains Mono', 'monospace'],
+          },
+          colors: {
+            obsidian: {
+              950: '#07090d',
+              900: '#0b0e14',
+              850: '#10151f',
+              800: '#161d2b',
+              700: '#212b3f',
+            }
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    * {
+      box-sizing: border-box;
+      user-select: none;
+    }
+    body {
+      background-color: #0b0e14;
+      color: #e2e8f0;
+      overflow: hidden;
+      font-family: 'Inter', sans-serif;
+    }
+
+    /* Fondo de retícula de coordenadas estilo bóveda Obsidian */
+    .vault-grid {
+      background-color: #0b0e14;
+      background-image:
+        radial-gradient(rgba(148, 163, 184, 0.14) 1px, transparent 1px),
+        linear-gradient(to right, rgba(30, 41, 59, 0.22) 1px, transparent 1px),
+        linear-gradient(to bottom, rgba(30, 41, 59, 0.22) 1px, transparent 1px);
+      background-size: 28px 28px, 140px 140px, 140px 140px;
+    }
+
+    /* Animaciones de la Sonda Geométrica */
+    @keyframes spinSlow {
+      from { transform: rotate(0deg); }
+      to { transform: rotate(360deg); }
+    }
+    @keyframes spinReverse {
+      from { transform: rotate(360deg); }
+      to { transform: rotate(0deg); }
+    }
+    @keyframes pulseRing {
+      0% { transform: scale(0.85); opacity: 0.9; }
+      100% { transform: scale(2.1); opacity: 0; }
+    }
+    @keyframes dashFlow {
+      to { stroke-dashoffset: -24; }
+    }
+
+    .probe-ring-outer {
+      transform-origin: center;
+      animation: spinSlow 7s linear infinite;
+    }
+    .probe-ring-inner {
+      transform-origin: center;
+      animation: spinReverse 4s linear infinite;
+    }
+    .probe-scanning .probe-ring-outer {
+      animation-duration: 1.5s;
+    }
+    .probe-scanning .probe-ring-inner {
+      animation-duration: 0.9s;
+    }
+    .edge-active-flow {
+      stroke-dasharray: 6 6;
+      animation: dashFlow 0.7s linear infinite;
+    }
+    .ripple-wave {
+      transform-origin: center;
+      animation: pulseRing 1.2s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    }
+
+    /* Scrollbar personalizado discreto */
+    ::-webkit-scrollbar {
+      width: 5px;
+      height: 5px;
+    }
+    ::-webkit-scrollbar-track {
+      background: rgba(15, 23, 42, 0.4);
+    }
+    ::-webkit-scrollbar-thumb {
+      background: rgba(71, 85, 105, 0.5);
+      border-radius: 9999px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: rgba(100, 116, 139, 0.8);
+    }
+  </style>
+</head>
+<body class="h-screen w-screen flex flex-col bg-obsidian-900 text-slate-200">
+
+  <!-- BARRA SUPERIOR DE CONTROL (HUD) -->
+  <header class="h-14 border-b border-slate-800/80 bg-obsidian-950/90 backdrop-blur-md px-3 sm:px-5 flex items-center justify-between gap-2 z-30 shrink-0">
+    <!-- Identidad -->
+    <div class="flex items-center gap-2.5 min-w-0">
+      <div class="w-8 h-8 rounded-lg bg-cyan-500/10 border border-cyan-400/30 flex items-center justify-center shrink-0 shadow-[0_0_15px_rgba(34,211,238,0.18)]">
+        <svg class="w-4 h-4 text-cyan-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <circle cx="12" cy="12" r="3" />
+          <path d="M12 2v4m0 12v4M2 12h4m12 0h4" />
+          <circle cx="12" cy="12" r="8" stroke-dasharray="3 3" />
+        </svg>
+      </div>
+      <div class="truncate">
+        <div class="flex items-center gap-2">
+          <span class="font-semibold text-sm sm:text-base tracking-tight text-white">State of Flows</span>
+          <span class="font-mono text-[10px] px-1.5 py-0.5 rounded bg-cyan-500/15 text-cyan-300 border border-cyan-500/30">SoFs v0.9</span>
+        </div>
+        <p class="text-[11px] text-slate-400 hidden md:block truncate">Flow: <span class="font-mono text-slate-300">prod_onboarding_billing_pipeline</span></p>
+      </div>
+    </div>
+
+    <!-- Controles Centrales: Presets & Velocidad -->
+    <div class="flex items-center gap-2 sm:gap-3">
+      <!-- Selector de Preset de Auditoría -->
+      <div class="flex items-center bg-obsidian-850 border border-slate-800 rounded-lg p-0.5">
+        <label for="presetSelect" class="sr-only">Preset de Auditoría</label>
+        <div class="flex items-center pl-2 pr-1 text-slate-400">
+          <svg class="w-3.5 h-3.5 text-cyan-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M12 3l8 4.5v9L12 21l-8-4.5v-9L12 3z" />
+          </svg>
+        </div>
+        <select id="presetSelect" class="bg-transparent text-xs sm:text-sm font-medium text-slate-200 py-1.5 pr-2 focus:outline-none cursor-pointer">
+          <option value="resilience" class="bg-obsidian-900">Preset: Resiliencia & Errores</option>
+          <option value="security" class="bg-obsidian-900">Preset: Seguridad & PII</option>
+          <option value="performance" class="bg-obsidian-900">Preset: Rendimiento & Costo API</option>
+        </select>
+      </div>
+
+      <!-- Velocidad de Escaneo -->
+      <div class="hidden lg:flex items-center bg-obsidian-850 border border-slate-800 rounded-lg p-0.5 text-xs font-mono" id="speedControls">
+        <button data-speed="1" class="speed-btn px-2 py-1 rounded-md bg-slate-700/80 text-white transition">1x</button>
+        <button data-speed="2.2" class="speed-btn px-2 py-1 rounded-md text-slate-400 hover:text-white transition">2x</button>
+        <button data-speed="instant" class="speed-btn px-2 py-1 rounded-md text-slate-400 hover:text-white transition">Instant</button>
+      </div>
+
+      <!-- Seguimiento de Cámara -->
+      <button id="cameraFollowBtn" title="Seguir sonda automáticamente" class="hidden sm:flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-medium border border-cyan-500/40 bg-cyan-500/10 text-cyan-300 transition">
+        <span class="w-1.5 h-1.5 rounded-full bg-cyan-400 animate-pulse" id="cameraDot"></span>
+        <span>Auto-Cámara</span>
+      </button>
+
+      <!-- Botón Principal de Ejecución -->
+      <button id="startScanBtn" class="flex items-center gap-2 px-3.5 py-1.5 rounded-lg text-xs sm:text-sm font-semibold bg-cyan-500 hover:bg-cyan-400 text-slate-950 shadow-[0_0_20px_rgba(34,211,238,0.3)] transition active:scale-95 cursor-pointer">
+        <svg id="startIcon" class="w-4 h-4" viewBox="0 0 24 24" fill="currentColor">
+          <path d="M8 5v14l11-7z" />
+        </svg>
+        <span id="startBtnText">Iniciar Escaneo SoFs</span>
+      </button>
+    </div>
+  </header>
+
+  <!-- ÁREA PRINCIPAL: BÓVEDA ESPACIAL + PANEL LATERAL DE RAZONAMIENTO -->
+  <div class="flex-1 flex overflow-hidden relative">
+
+    <!-- BÓVEDA INTERACTIVA (CANVAS ESPACIAL TIPO OBSIDIAN) -->
+    <main id="vaultViewport" class="flex-1 relative overflow-hidden vault-grid cursor-grab active:cursor-grabbing">
+
+      <!-- Coordenadas y Leyenda Superior Izquierda -->
+      <div class="absolute top-3 left-3 z-20 flex flex-wrap items-center gap-2 pointer-events-none">
+        <div class="bg-obsidian-950/85 backdrop-blur-md border border-slate-800/90 rounded-lg px-2.5 py-1.5 flex items-center gap-3 text-[11px] font-mono text-slate-400">
+          <span id="coordsDisplay">X: 000 Y: 000</span>
+          <span class="text-slate-700">|</span>
+          <span id="zoomDisplay">100%</span>
+        </div>
+        <div class="hidden md:flex bg-obsidian-950/85 backdrop-blur-md border border-slate-800/90 rounded-lg px-2.5 py-1.5 items-center gap-3 text-[11px]">
+          <span class="flex items-center gap-1.5 text-slate-300"><span class="w-2 h-2 rounded-full bg-cyan-400"></span>Escaneando</span>
+          <span class="flex items-center gap-1.5 text-slate-300"><span class="w-2 h-2 rounded-full bg-emerald-400"></span>Óptimo</span>
+          <span class="flex items-center gap-1.5 text-slate-300"><span class="w-2 h-2 rounded-full bg-amber-400"></span>Advertencia</span>
+          <span class="flex items-center gap-1.5 text-slate-300"><span class="w-2 h-2 rounded-full bg-rose-500"></span>Crítico</span>
+        </div>
+      </div>
+
+      <!-- Controles de Zoom Inferiores Izquierdos -->
+      <div class="absolute bottom-4 left-4 z-20 flex items-center gap-1.5 bg-obsidian-950/90 backdrop-blur-md border border-slate-800 rounded-lg p-1">
+        <button id="zoomOutBtn" class="p-1.5 rounded hover:bg-slate-800 text-slate-300 transition" title="Alejar">
+          <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14"/></svg>
+        </button>
+        <button id="resetViewBtn" class="px-2 py-1 rounded hover:bg-slate-800 text-[11px] font-mono text-slate-300 transition" title="Centrar Bóveda">
+          Centrar
+        </button>
+        <button id="zoomInBtn" class="p-1.5 rounded hover:bg-slate-800 text-slate-300 transition" title="Acercar">
+          <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14M5 12h14"/></svg>
+        </button>
+      </div>
+
+      <!-- Botón flotante para abrir panel en móviles -->
+      <button id="togglePanelMobileBtn" class="md:hidden absolute bottom-4 right-4 z-20 flex items-center gap-2 px-3 py-2 rounded-lg bg-obsidian-850 border border-slate-700 text-xs font-medium text-white shadow-lg">
+        <span>Informe SoFs</span>
+        <span id="mobileScoreBadge" class="px-1.5 py-0.5 rounded bg-slate-800 font-mono text-cyan-400">--</span>
+      </button>
+
+      <!-- MUNDO TRANSFORMABLE (PAN & ZOOM) -->
+      <div id="vaultWorld" class="absolute top-0 left-0 origin-top-left will-change-transform" style="width: 1600px; height: 950px;">
+
+        <!-- Agrupaciones / Secciones de la Bóveda (Zonas visuales) -->
+        <div id="sectionsLayer" class="absolute inset-0 pointer-events-none"></div>
+
+        <!-- Capa SVG: Aristas Bezier, Pulsos de Datos, Ondas de Impacto y Sonda Artefacto -->
+        <svg id="vaultSvg" width="1600" height="950" class="absolute inset-0 overflow-visible pointer-events-none">
+          <defs>
+            <filter id="glowCyan" x="-40%" y="-40%" width="180%" height="180%">
+              <feGaussianBlur stdDeviation="4" result="blur" />
+              <feMerge>
+                <feMergeNode in="blur" />
+                <feMergeNode in="SourceGraphic" />
+              </feMerge>
+            </filter>
+            <filter id="glowStrong" x="-60%" y="-60%" width="220%" height="220%">
+              <feGaussianBlur stdDeviation="7" result="blur" />
+              <feMerge>
+                <feMergeNode in="blur" />
+                <feMergeNode in="SourceGraphic" />
+              </feMerge>
+            </filter>
+          </defs>
+
+          <!-- Conexiones entre nodos -->
+          <g id="edgesGroup"></g>
+
+          <!-- Ondas expansivas de anomalías en cascada -->
+          <g id="ripplesGroup"></g>
+
+          <!-- Rastro luminoso de la trayectoria recorrida por la sonda -->
+          <path id="probeTrail" d="" fill="none" stroke="rgba(34, 211, 238, 0.35)" stroke-width="2.5" stroke-linecap="round" />
+
+          <!-- ARTEFACTO / SONDA GEOMÉTRICA DE ESCANEO -->
+          <g id="scannerProbe" transform="translate(180, 260)" style="opacity: 0;">
+            <!-- Haz radial de inspección -->
+            <circle id="probeAura" r="44" fill="rgba(34, 211, 238, 0.08)" />
+            <!-- Anillo exterior segmentado -->
+            <g class="probe-ring-outer">
+              <circle r="34" fill="none" stroke="#22d3ee" stroke-width="1.5" stroke-dasharray="14 8 4 8" id="probeOuterStroke" />
+            </g>
+            <!-- Anillo interior de precisión -->
+            <g class="probe-ring-inner">
+              <circle r="23" fill="none" stroke="#38bdf8" stroke-width="1.2" stroke-dasharray="28 12" id="probeInnerStroke" />
+            </g>
+            <!-- Retícula cardinal -->
+            <g stroke="#22d3ee" stroke-width="1.5" id="probeCrosshair">
+              <line x1="0" y1="-40" x2="0" y2="-30" />
+              <line x1="0" y1="30" x2="0" y2="40" />
+              <line x1="-40" y1="0" x2="-30" y2="0" />
+              <line x1="30" y1="0" x2="40" y2="0" />
+            </g>
+            <!-- Núcleo de la sonda -->
+            <polygon points="0,-9 8,0 0,9 -8,0" fill="#22d3ee" filter="url(#glowCyan)" id="probeCore" />
+          </g>
+        </svg>
+
+        <!-- Capa HTML: Nodos Interactivos -->
+        <div id="nodesLayer" class="absolute inset-0"></div>
+
+        <!-- Tarjeta Flotante Contextual anclada cerca de la Sonda -->
+        <div id="probeCallout" class="hidden absolute z-30 w-72 pointer-events-none transition-opacity duration-200">
+          <div class="bg-obsidian-950/95 backdrop-blur-md border border-cyan-500/40 rounded-xl p-3 shadow-[0_10px_35px_rgba(0,0,0,0.75)]">
+            <div class="flex items-center justify-between gap-2 mb-1.5">
+              <span class="text-[10px] font-mono uppercase tracking-wider text-cyan-400 flex items-center gap-1.5">
+                <span class="w-1.5 h-1.5 rounded-full bg-cyan-400 animate-ping"></span>
+                <span id="calloutStepLabel">INSPECCIONANDO SECCIÓN</span>
+              </span>
+              <span id="calloutNodeTag" class="text-[10px] font-mono text-slate-400">NODO</span>
+            </div>
+            <p id="calloutTitle" class="text-xs font-semibold text-white mb-1">Analizando nodo...</p>
+            <p id="calloutThought" class="text-[11px] leading-relaxed text-slate-300 font-mono">Leyendo esquema de entrada y dependencias...</p>
+          </div>
+        </div>
+
+      </div>
+    </main>
+
+    <!-- PANEL DERECHO: RAZONAMIENTO EN VIVO & INFORME SIMPLIFICADO SOFS -->
+    <aside id="reportSidebar" class="fixed md:static inset-y-0 right-0 w-full sm:w-96 lg:w-[420px] bg-obsidian-950/95 backdrop-blur-xl border-l border-slate-800/90 flex flex-col z-40 transform translate-x-full md:translate-x-0 transition-transform duration-300">
+
+      <!-- Cabecera del Panel + Salud Global -->
+      <div class="p-4 border-b border-slate-800/80">
+        <div class="flex items-center justify-between mb-3">
+          <div>
+            <h2 class="text-xs font-mono uppercase tracking-wider text-slate-400">Diagnóstico Cognitivo</h2>
+            <p id="activePresetTitle" class="text-sm font-semibold text-white">Resiliencia & Manejo de Errores</p>
+          </div>
+          <button id="closePanelMobileBtn" class="md:hidden p-1.5 rounded-lg bg-slate-800 text-slate-300">
+            <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6L6 18M6 6l12 12"/></svg>
+          </button>
+        </div>
+
+        <!-- Tarjeta de Estado General (Score + Contadores) -->
+        <div class="bg-obsidian-900 border border-slate-800 rounded-xl p-3 flex items-center justify-between gap-3">
+          <div class="flex items-center gap-3">
+            <!-- Gauge circular SVG -->
+            <div class="relative w-14 h-14 flex items-center justify-center shrink-0">
+              <svg class="w-14 h-14 -rotate-90" viewBox="0 0 56 56">
+                <circle cx="28" cy="28" r="23" fill="none" stroke="#1e293b" stroke-width="5" />
+                <circle id="scoreArc" cx="28" cy="28" r="23" fill="none" stroke="#22d3ee" stroke-width="5" stroke-linecap="round" stroke-dasharray="144.5" stroke-dashoffset="144.5" class="transition-all duration-500" />
+              </svg>
+              <span id="healthScoreText" class="absolute font-mono text-sm font-bold text-white">--</span>
+            </div>
+            <div>
+              <div class="text-[11px] font-mono uppercase text-slate-400">Estado del Flow</div>
+              <div id="flowVerdictText" class="text-sm font-semibold text-slate-200">Listo para escanear</div>
+              <div id="scanProgressText" class="text-[11px] text-slate-400 font-mono mt-0.5">0 / 9 nodos auditados</div>
+            </div>
+          </div>
+
+          <!-- Mini badges de conteo -->
+          <div class="flex flex-col gap-1 text-[11px] font-mono">
+            <span class="px-2 py-0.5 rounded bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 flex items-center justify-between gap-2">
+              <span>OK</span><strong id="countOk">0</strong>
+            </span>
+            <span class="px-2 py-0.5 rounded bg-amber-500/10 text-amber-400 border border-amber-500/20 flex items-center justify-between gap-2">
+              <span>WARN</span><strong id="countWarn">0</strong>
+            </span>
+            <span class="px-2 py-0.5 rounded bg-rose-500/10 text-rose-400 border border-rose-500/20 flex items-center justify-between gap-2">
+              <span>CRIT</span><strong id="countCrit">0</strong>
+            </span>
+          </div>
+        </div>
+
+        <!-- Tabs: Razonamiento en Vivo vs Informe Simplificado -->
+        <div class="grid grid-cols-2 gap-1 bg-obsidian-900 p-1 rounded-lg border border-slate-800 mt-3 text-xs font-medium">
+          <button id="tabStreamBtn" class="py-1.5 rounded-md bg-slate-800 text-white transition">Razonamiento en Vivo</button>
+          <button id="tabReportBtn" class="py-1.5 rounded-md text-slate-400 hover:text-white transition flex items-center justify-center gap-1.5">
+            <span>Informe Simplificado</span>
+            <span id="reportReadyDot" class="hidden w-1.5 h-1.5 rounded-full bg-cyan-400"></span>
+          </button>
+        </div>
+      </div>
+
+      <!-- CONTENIDO DEL PANEL -->
+      <div class="flex-1 overflow-y-auto p-4 space-y-3" id="panelScrollArea">
+
+        <!-- Vista 1: Stream de Razonamiento paso a paso -->
+        <div id="streamView" class="space-y-2.5">
+          <div id="emptyStreamState" class="text-center py-12 px-4 border border-dashed border-slate-800 rounded-xl">
+            <div class="w-10 h-10 rounded-full bg-cyan-500/10 border border-cyan-500/30 flex items-center justify-center mx-auto mb-3 text-cyan-400">
+              <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <circle cx="12" cy="12" r="9" />
+                <path d="M12 8v4l3 3" />
+              </svg>
+            </div>
+            <p class="text-sm font-medium text-slate-200 mb-1">Sonda SoFs en espera</p>
+            <p class="text-xs text-slate-400 leading-relaxed">
+              Selecciona un preset de auditoría y presiona <strong class="text-cyan-400">Iniciar Escaneo SoFs</strong> para desplegar el artefacto sobre la bóveda y observar su razonamiento sección por sección.
+            </p>
+          </div>
+          <div id="reasoningFeed" class="space-y-2.5"></div>
+        </div>
+
+        <!-- Vista 2: Informe Simplificado Ejecutivo -->
+        <div id="reportView" class="hidden space-y-4">
+          <div id="reportContent"></div>
+        </div>
+
+      </div>
+    </aside>
+
+  </div>
+
+  <script>
+    /**
+     * ============================================================================
+     * STATE OF FLOWS (SoFs) — MOTOR DE BÓVEDA, SONDA DE ESCANEO Y AUDITORÍA
+     * ============================================================================
+     */
+
+    // 1. DEFINICIÓN DE SECCIONES DE LA BÓVEDA (ZONAS LÓGICAS)
+    const VAULT_SECTIONS = [
+      { id: 'sec_ingest', title: '01 // INGESTA & VALIDACIÓN', x: 70, y: 120, w: 390, h: 310 },
+      { id: 'sec_logic',  title: '02 // ENRIQUECIMIENTO & DECISIÓN IA', x: 510, y: 90, w: 470, h: 520 },
+      { id: 'sec_output', title: '03 // PERSISTENCIA & NOTIFICACIÓN', x: 1030, y: 120, w: 460, h: 520 }
+    ];
+
+    // 2. DEFINICIÓN DE NODOS DEL FLOW DE AUTOMATIZACIÓN
+    const FLOW_NODES = [
+      {
+        id: 'n1',
+        code: 'TRG-01',
+        name: 'Webhook Entrada',
+        type: 'Trigger HTTP',
+        section: '01 // INGESTA',
+        x: 170,
+        y: 260,
+        complexity: 1.0,
+        meta: 'POST /v1/leads/capture',
+        downstream: ['n2', 'n3', 'n4', 'n5', 'n6', 'n7', 'n8', 'n9']
+      },
+      {
+        id: 'n2',
+        code: 'SEC-02',
+        name: 'Filtro Auth & PII',
+        type: 'Guardrail / Middleware',
+        section: '01 // INGESTA',
+        x: 365,
+        y: 260,
+        complexity: 1.3,
+        meta: 'HMAC + Regex Masking',
+        downstream: ['n3', 'n4', 'n5', 'n6', 'n7', 'n8', 'n9']
+      },
+      {
+        id: 'n3',
+        code: 'API-03',
+        name: 'CRM Enrich API',
+        type: 'HTTP Request',
+        section: '02 // ENRIQUECIMIENTO',
+        x: 610,
+        y: 200,
+        complexity: 1.5,
+        meta: 'GET api.clearbit/v2/person',
+        downstream: ['n4', 'n5', 'n6', 'n7', 'n8', 'n9']
+      },
+      {
+        id: 'n4',
+        code: 'AI-04',
+        name: 'Clasificador Intent IA',
+        type: 'LLM Node (GPT-4o)',
+        section: '02 // DECISIÓN IA',
+        x: 610,
+        y: 440,
+        complexity: 1.6,
+        meta: 'temp: 0.1 | max_tokens: 800',
+        downstream: ['n5', 'n6', 'n7', 'n8', 'n9']
+      },
+      {
+        id: 'n5',
+        code: 'RTR-05',
+        name: 'Router Condicional',
+        type: 'Switch / Branch',
+        section: '02 // DECISIÓN IA',
+        x: 865,
+        y: 310,
+        complexity: 1.4,
+        meta: 'score >= 0.85 ? VIP : STD',
+        downstream: ['n6', 'n7', 'n8', 'n9']
+      },
+      {
+        id: 'n6',
+        code: 'DB-06',
+        name: 'Postgres Upsert',
+        type: 'Database Write',
+        section: '03 // PERSISTENCIA',
+        x: 1140,
+        y: 210,
+        complexity: 1.2,
+        meta: 'ON CONFLICT (email) UPDATE',
+        downstream: ['n8', 'n9']
+      },
+      {
+        id: 'n7',
+        code: 'DLQ-07',
+        name: 'Cola Fallback / Retry',
+        type: 'Dead Letter Queue',
+        section: '03 // RESILIENCIA',
+        x: 1140,
+        y: 480,
+        complexity: 1.2,
+        meta: 'Redis Stream Retry x3',
+        downstream: ['n9']
+      },
+      {
+        id: 'n8',
+        code: 'BIL-08',
+        name: 'Stripe Billing Sync',
+        type: 'External Mutation',
+        section: '03 // PERSISTENCIA',
+        x: 1380,
+        y: 210,
+        complexity: 1.5,
+        meta: 'POST /v1/subscriptions',
+        downstream: ['n9']
+      },
+      {
+        id: 'n9',
+        code: 'OPS-09',
+        name: 'Alerta Slack & Audit',
+        type: 'Notification',
+        section: '03 // NOTIFICACIÓN',
+        x: 1380,
+        y: 430,
+        complexity: 1.0,
+        meta: '#ops-enterprise-alerts',
+        downstream: []
+      }
+    ];
+
+    // 3. CONEXIONES (ARISTAS) DEL GRAFO
+    const FLOW_EDGES = [
+      { from: 'n1', to: 'n2' },
+      { from: 'n2', to: 'n3' },
+      { from: 'n2', to: 'n4' },
+      { from: 'n3', to: 'n5' },
+      { from: 'n4', to: 'n5' },
+      { from: 'n5', to: 'n6' },
+      { from: 'n5', to: 'n7' },
+      { from: 'n6', to: 'n8' },
+      { from: 'n6', to: 'n9' },
+      { from: 'n7', to: 'n9' },
+      { from: 'n8', to: 'n9' }
+    ];
+
+    // RUTA SISTEMÁTICA DE ESCANEO DE LA SONDA
+    const SCAN_SEQUENCE = ['n1', 'n2', 'n3', 'n4', 'n5', 'n6', 'n8', 'n7', 'n9'];
+
+    // 4. PRESETS DE AUDITORÍA CON RAZONAMIENTO Y RECOMENDACIONES ESPECÍFICAS POR NODO
+    const AUDIT_PRESETS = {
+      resilience: {
+        label: 'Resiliencia & Manejo de Errores',
+        summary: 'Evalúa tolerancia a fallos de red, políticas de reintento, idempotencia y rutas de recuperación ante caídas externas.',
+        findings: {
+          n1: {
+            status: 'ok',
+            thought: 'Verificando validación de payload entrante y respuesta 202 inmediata → Esquema JSON estricto activo.',
+            detail: 'El webhook responde en <45ms antes de procesar tareas pesadas, evitando timeouts del emisor.',
+            fix: 'Ninguna acción requerida.'
+          },
+          n2: {
+            status: 'ok',
+            thought: 'Inspeccionando comportamiento ante cabeceras malformadas → Rechazo controlado 401 sin romper el worker.',
+            detail: 'Manejo limpio de excepciones de autenticación.',
+            fix: 'Ninguna acción requerida.'
+          },
+          n3: {
+            status: 'critical',
+            thought: '¡Alerta! Llamada HTTP externa sin timeout definido ni captura de error 429/503 → Punto único de fallo.',
+            detail: 'Si CRM Enrich API tarda >30s o devuelve 502, bloquea el hilo principal y aborta todo el flujo.',
+            fix: 'Configurar timeout de 4000ms, 2 reintentos con backoff exponencial y ruta alternativa hacia Router.'
+          },
+          n4: {
+            status: 'warning',
+            thought: 'Analizando salida del LLM → Falta fallback si el modelo devuelve JSON truncado o rate-limit.',
+            detail: 'Aunque tiene structured outputs, no existe modelo secundario de respaldo ante indisponibilidad de OpenAI.',
+            fix: 'Añadir fallback automático a modelo ligero o regla heurística por palabras clave.'
+          },
+          n5: {
+            status: 'ok',
+            thought: 'Evaluando ramas del Router Condicional → Rama "default" conectada correctamente.',
+            detail: 'Todos los casos límite (null/undefined en score) tienen salida controlada.',
+            fix: 'Ninguna acción requerida.'
+          },
+          n6: {
+            status: 'ok',
+            thought: 'Verificando operación en Postgres → Uso de UPSERT idempotente por clave única (email).',
+            detail: 'Reejecutar el flujo no genera registros duplicados.',
+            fix: 'Ninguna acción requerida.'
+          },
+          n8: {
+            status: 'critical',
+            thought: '¡Riesgo Crítico! Mutación en Stripe sin Idempotency-Key → Riesgo de doble cobro en reintentos.',
+            detail: 'Si la red falla tras crear la suscripción, un reintento automático generará cargos duplicados al cliente.',
+            fix: 'Inyectar cabecera `Idempotency-Key: {{trigger.event_id}}` en la petición POST a Stripe.'
+          },
+          n7: {
+            status: 'warning',
+            thought: 'Inspeccionando Dead Letter Queue → Cola activa pero sin alerta de saturación (>50 mensajes).',
+            detail: 'Los eventos fallidos se guardan, pero nadie se entera si la cola empieza a acumularse.',
+            fix: 'Agregar umbral de monitoreo que dispare alerta si la cola supera 25 eventos pendientes.'
+          },
+          n9: {
+            status: 'ok',
+            thought: 'Validando canal de notificación final → Fallo silencioso configurado para no revertir transacciones.',
+            detail: 'Un error en Slack no afecta la persistencia previa en DB ni Stripe.',
+            fix: 'Ninguna acción requerida.'
+          }
+        }
+      },
+
+      security: {
+        label: 'Seguridad, Permisos & PII',
+        summary: 'Audita exposición de datos personales (PII), secretos hardcodeados, firmas de webhook y retención en logs.',
+        findings: {
+          n1: {
+            status: 'warning',
+            thought: 'Revisando autenticación del Webhook → Token por query param detectado en lugar de firma HMAC.',
+            detail: 'Los tokens en URL quedan registrados en logs de proxies y balanceadores de carga.',
+            fix: 'Migrar autenticación a firma criptográfica HMAC-SHA256 en cabecera `X-Signature`.'
+          },
+          n2: {
+            status: 'ok',
+            thought: 'Validando enmascaramiento PII → Campos teléfono y documento se tokenizan antes de salir de Ingreso.',
+            detail: 'Cumple con principio de minimización de datos para nodos posteriores.',
+            fix: 'Ninguna acción requerida.'
+          },
+          n3: {
+            status: 'ok',
+            thought: 'Inspeccionando credenciales de CRM Enrich API → API Key inyectada vía Vault de secretos.',
+            detail: 'No se detectan credenciales en texto plano en la definición del nodo.',
+            fix: 'Ninguna acción requerida.'
+          },
+          n4: {
+            status: 'critical',
+            thought: '¡Exposición PII! Se envía el correo y cuerpo completo del usuario al LLM externo sin redacción.',
+            detail: 'Datos personales identificables viajan a un proveedor de IA de terceros sin anonimizar.',
+            fix: 'Aplicar scrub de entidades PII (emails, nombres propios) antes de construir el prompt.'
+          },
+          n5: {
+            status: 'ok',
+            thought: 'Verificando reglas de enrutamiento → Evalúa únicamente scores numéricos internos.',
+            detail: 'Sin exposición de metadatos sensibles en condiciones.',
+            fix: 'Ninguna acción requerida.'
+          },
+          n6: {
+            status: 'ok',
+            thought: 'Auditando conexión a Postgres → TLS 1.3 forzado y rol con privilegios mínimos (solo INSERT/UPDATE).',
+            detail: 'El usuario de base de datos no tiene permisos DROP ni lectura sobre tablas de administración.',
+            fix: 'Ninguna acción requerida.'
+          },
+          n8: {
+            status: 'ok',
+            thought: 'Verificando integración Stripe → Uso de tokens restringidos sin manipulación de tarjetas crudas.',
+            detail: 'Alcance PCI-DSS correctamente delegado.',
+            fix: 'Ninguna acción requerida.'
+          },
+          n7: {
+            status: 'warning',
+            thought: 'Revisando retención de Cola Fallback → Payloads fallidos persisten sin TTL ni cifrado adicional.',
+            detail: 'Los mensajes en Redis DLQ permanecen indefinidamente en memoria.',
+            fix: 'Establecer TTL máximo de 72 horas y purga automática tras reprocesamiento.'
+          },
+          n9: {
+            status: 'critical',
+            thought: '¡Fuga en Notificación! El mensaje a Slack imprime el payload JSON crudo incluyendo email y plan.',
+            detail: 'Información confidencial del cliente queda visible en un canal compartido de mensajería.',
+            fix: 'Formatear mensaje solo con ID interno de usuario y enlace al panel autenticado.'
+          }
+        }
+      },
+
+      performance: {
+        label: 'Rendimiento & Costo de API',
+        summary: 'Detecta cuellos de botella de latencia, llamadas redundantes, gasto excesivo de tokens LLM y paralelización.',
+        findings: {
+          n1: {
+            status: 'ok',
+            thought: 'Midiendo latencia de recepción → Parsing ligero en 12ms.',
+            detail: 'Sin bloqueos de I/O en la entrada.',
+            fix: 'Ninguna acción requerida.'
+          },
+          n2: {
+            status: 'ok',
+            thought: 'Evaluando expresiones Regex de filtrado → Ejecución local en memoria <3ms.',
+            detail: 'Costo computacional despreciable.',
+            fix: 'Ninguna acción requerida.'
+          },
+          n3: {
+            status: 'warning',
+            thought: 'Analizando frecuencia de consulta CRM → Sin caché para dominios corporativos repetidos.',
+            detail: 'El 38% de las llamadas consultan empresas ya enriquecidas en las últimas 24 horas.',
+            fix: 'Implementar caché Redis con TTL de 24h por dominio; ahorra ~38% de créditos API.'
+          },
+          n4: {
+            status: 'critical',
+            thought: '¡Sobrecosto LLM! Uso de modelo frontier pesado para una clasificación binaria simple.',
+            detail: 'Latencia media de 2.4s por lead y costo 15x superior al necesario para clasificar intención.',
+            fix: 'Cambiar a modelo rápido/mini (ej. GPT-4o-mini / Flash) reduciendo latencia a 320ms y costo en 92%.'
+          },
+          n5: {
+            status: 'ok',
+            thought: 'Inspeccionando evaluación condicional → Ramificación instantánea O(1).',
+            detail: 'Sin impacto en el tiempo total de ejecución.',
+            fix: 'Ninguna acción requerida.'
+          },
+          n6: {
+            status: 'ok',
+            thought: 'Verificando índices de Postgres → Índice compuesto en `email` permite Upsert en 6ms.',
+            detail: 'Rendimiento óptimo de escritura.',
+            fix: 'Ninguna acción requerida.'
+          },
+          n8: {
+            status: 'warning',
+            thought: 'Detectando ejecución secuencial → Stripe Sync espera a Postgres Upsert pudiendo ejecutarse en paralelo.',
+            detail: 'Añade +480ms innecesarios a la ruta crítica VIP.',
+            fix: 'Ejecutar DB Upsert y Stripe Sync en ramas paralelas tras el Router.'
+          },
+          n7: {
+            status: 'ok',
+            thought: 'Verificando carga en Cola Fallback → Solo se activa bajo excepción (<1.2% del tráfico).',
+            detail: 'No consume recursos en el flujo nominal.',
+            fix: 'Ninguna acción requerida.'
+          },
+          n9: {
+            status: 'ok',
+            thought: 'Midiendo disparo de webhook Slack → Ejecución asíncrona fire-and-forget.',
+            detail: 'No bloquea el cierre del flujo.',
+            fix: 'Ninguna acción requerida.'
+          }
+        }
+      }
+    };
+
+    // ============================================================================
+    // ESTADO DE LA APLICACIÓN
+    // ============================================================================
+    const state = {
+      presetKey: 'resilience',
+      isScanning: false,
+      isComplete: false,
+      speedMultiplier: 1, // 1, 2.2, o 'instant'
+      cameraFollow: true,
+      selectedNodeId: null,
+      auditedResults: {}, // nodeId -> finding
+      activeTab: 'stream', // 'stream' | 'report'
+      // Transformación de la bóveda (Pan & Zoom)
+      pan: { x: 0, y: 0 },
+      zoom: 0.88,
+      isDragging: false,
+      dragStart: { x: 0, y: 0 },
+      // Posición actual de la sonda
+      probePos: { x: 170, y: 260 },
+      trailPoints: [],
+      scanRunId: 0
+    };
+
+    // Referencias DOM
+    const els = {
+      vaultViewport: document.getElementById('vaultViewport'),
+      vaultWorld: document.getElementById('vaultWorld'),
+      sectionsLayer: document.getElementById('sectionsLayer'),
+      edgesGroup: document.getElementById('edgesGroup'),
+      ripplesGroup: document.getElementById('ripplesGroup'),
+      nodesLayer: document.getElementById('nodesLayer'),
+      scannerProbe: document.getElementById('scannerProbe'),
+      probeTrail: document.getElementById('probeTrail'),
+      probeCallout: document.getElementById('probeCallout'),
+      calloutStepLabel: document.getElementById('calloutStepLabel'),
+      calloutNodeTag: document.getElementById('calloutNodeTag'),
+      calloutTitle: document.getElementById('calloutTitle'),
+      calloutThought: document.getElementById('calloutThought'),
+      presetSelect: document.getElementById('presetSelect'),
+      startScanBtn: document.getElementById('startScanBtn'),
+      startBtnText: document.getElementById('startBtnText'),
+      cameraFollowBtn: document.getElementById('cameraFollowBtn'),
+      cameraDot: document.getElementById('cameraDot'),
+      coordsDisplay: document.getElementById('coordsDisplay'),
+      zoomDisplay: document.getElementById('zoomDisplay'),
+      activePresetTitle: document.getElementById('activePresetTitle'),
+      scoreArc: document.getElementById('scoreArc'),
+      healthScoreText: document.getElementById('healthScoreText'),
+      flowVerdictText: document.getElementById('flowVerdictText'),
+      scanProgressText: document.getElementById('scanProgressText'),
+      countOk: document.getElementById('countOk'),
+      countWarn: document.getElementById('countWarn'),
+      countCrit: document.getElementById('countCrit'),
+      panelScrollArea: document.getElementById('panelScrollArea'),
+      reasoningFeed: document.getElementById('reasoningFeed'),
+      emptyStreamState: document.getElementById('emptyStreamState'),
+      streamView: document.getElementById('streamView'),
+      reportView: document.getElementById('reportView'),
+      reportContent: document.getElementById('reportContent'),
+      tabStreamBtn: document.getElementById('tabStreamBtn'),
+      tabReportBtn: document.getElementById('tabReportBtn'),
+      reportReadyDot: document.getElementById('reportReadyDot'),
+      reportSidebar: document.getElementById('reportSidebar'),
+      mobileScoreBadge: document.getElementById('mobileScoreBadge')
+    };
+
+    // Paleta semántica por estado
+    const STATUS_COLORS = {
+      scanning: { hex: '#22d3ee', bg: 'rgba(34,211,238,0.12)', border: 'border-cyan-400', text: 'text-cyan-400', badge: 'ESCANEANDO' },
+      ok:       { hex: '#34d399', bg: 'rgba(52,211,153,0.12)', border: 'border-emerald-400/70', text: 'text-emerald-400', badge: 'ÓPTIMO' },
+      warning:  { hex: '#fbbf24', bg: 'rgba(251,191,36,0.12)', border: 'border-amber-400/80', text: 'text-amber-400', badge: 'ADVERTENCIA' },
+      critical: { hex: '#f43f5e', bg: 'rgba(244,63,94,0.14)', border: 'border-rose-500', text: 'text-rose-400', badge: 'CRÍTICO' }
+    };
+
+    // ============================================================================
+    // RENDERIZADO INICIAL DE LA BÓVEDA (SECCIONES, ARISTAS Y NODOS)
+    // ============================================================================
+    function initVault() {
+      renderSections();
+      renderEdges();
+      renderNodes();
+      fitVaultToViewport();
+      updatePresetHeader();
+    }
+
+    function renderSections() {
+      els.sectionsLayer.innerHTML = VAULT_SECTIONS.map(sec => `
+        <div class="absolute rounded-2xl border border-slate-800/70 bg-slate-900/20"
+             style="left:${sec.x}px; top:${sec.y}px; width:${sec.w}px; height:${sec.h}px;">
+          <div class="px-3.5 py-2 text-[10px] font-mono tracking-widest text-slate-500 border-b border-slate-800/50">
+            ${sec.title}
+          </div>
+        </div>
+      `).join('');
+    }
+
+    function getEdgePath(fromNode, toNode) {
+      const dx = Math.abs(toNode.x - fromNode.x) * 0.52;
+      const c1x = fromNode.x + dx;
+      const c1y = fromNode.y;
+      const c2x = toNode.x - dx;
+      const c2y = toNode.y;
+      return `M ${fromNode.x} ${fromNode.y} C ${c1x} ${c1y}, ${c2x} ${c2y}, ${toNode.x} ${toNode.y}`;
+    }
+
+    function renderEdges() {
+      els.edgesGroup.innerHTML = FLOW_EDGES.map((edge, idx) => {
+        const from = FLOW_NODES.find(n => n.id === edge.from);
+        const to = FLOW_NODES.find(n => n.id === edge.to);
+        const d = getEdgePath(from, to);
+        return `
+          <g id="edge-${edge.from}-${edge.to}">
+            <path d="${d}" fill="none" stroke="#1e293b" stroke-width="2.5" />
+            <path id="edge-pulse-${edge.from}-${edge.to}" d="${d}" fill="none" stroke="rgba(56, 189, 248, 0.25)" stroke-width="1.5" class="edge-active-flow" />
+          </g>
+        `;
+      }).join('');
+    }
+
+    function renderNodes() {
+      els.nodesLayer.innerHTML = FLOW_NODES.map(node => `
+        <div id="node-card-${node.id}"
+             data-node-id="${node.id}"
+             style="left: ${node.x - 102}px; top: ${node.y - 42}px; width: 204px;"
+             class="vault-node absolute rounded-xl bg-obsidian-850/95 border border-slate-700/80 p-3 shadow-xl transition-all duration-300 cursor-pointer hover:border-slate-500">
+          <div class="flex items-center justify-between gap-1.5 mb-1">
+            <span class="font-mono text-[10px] px-1.5 py-0.5 rounded bg-slate-800 text-slate-400 border border-slate-700/70">${node.code}</span>
+            <span id="node-badge-${node.id}" class="font-mono text-[9px] px-1.5 py-0.5 rounded bg-slate-800/80 text-slate-500">EN ESPERA</span>
+          </div>
+          <div class="text-xs font-semibold text-slate-100 truncate">${node.name}</div>
+          <div class="text-[10px] font-mono text-slate-400 truncate mt-0.5">${node.meta}</div>
+        </div>
+      `).join('');
+
+      // Evento click en cada nodo para inspeccionar su detalle
+      document.querySelectorAll('.vault-node').forEach(card => {
+        card.addEventListener('click', (e) => {
+          e.stopPropagation();
+          const nodeId = card.getAttribute('data-node-id');
+          selectNodeForInspection(nodeId);
+        });
+      });
+    }
+
+    // ============================================================================
+    // CONTROL DE CÁMARA (PAN, ZOOM & AUTO-SEGUIMIENTO)
+    // ============================================================================
+    function applyVaultTransform(smooth = false) {
+      els.vaultWorld.style.transition = smooth ? 'transform 0.45s cubic-bezier(0.22, 1, 0.36, 1)' : 'none';
+      els.vaultWorld.style.transform = `translate(${state.pan.x}px, ${state.pan.y}px) scale(${state.zoom})`;
+      els.zoomDisplay.textContent = `${Math.round(state.zoom * 100)}%`;
+    }
+
+    function fitVaultToViewport() {
+      const rect = els.vaultViewport.getBoundingClientRect();
+      const scaleX = (rect.width - 60) / 1550;
+      const scaleY = (rect.height - 80) / 720;
+      state.zoom = Math.max(0.45, Math.min(0.95, Math.min(scaleX, scaleY)));
+      state.pan.x = (rect.width - 1550 * state.zoom) / 2;
+      state.pan.y = (rect.height - 680 * state.zoom) / 2;
+      applyVaultTransform(true);
+    }
+
+    function focusCameraOnPoint(worldX, worldY, smooth = true) {
+      if (!state.cameraFollow) return;
+      const rect = els.vaultViewport.getBoundingClientRect();
+      const targetZoom = Math.max(state.zoom, 0.92);
+      state.zoom = targetZoom;
+      state.pan.x = rect.width / 2 - worldX * state.zoom;
+      state.pan.y = rect.height / 2 - worldY * state.zoom;
+      applyVaultTransform(smooth);
+    }
+
+    // Pan con ratón / touch
+    els.vaultViewport.addEventListener('mousedown', (e) => {
+      if (e.target.closest('.vault-node')) return;
+      state.isDragging = true;
+      state.dragStart = { x: e.clientX - state.pan.x, y: e.clientY - state.pan.y };
+      // Si el usuario toma control manual mientras escanea, desactivamos auto-cámara suavemente
+      if (state.isScanning && state.cameraFollow) {
+        setCameraFollow(false);
+      }
+    });
+
+    window.addEventListener('mousemove', (e) => {
+      const rect = els.vaultViewport.getBoundingClientRect();
+      const wx = Math.round((e.clientX - rect.left - state.pan.x) / state.zoom);
+      const wy = Math.round((e.clientY - rect.top - state.pan.y) / state.zoom);
+      els.coordsDisplay.textContent = `X: ${String(wx).padStart(3, '0')} Y: ${String(wy).padStart(3, '0')}`;
+
+      if (!state.isDragging) return;
+      state.pan.x = e.clientX - state.dragStart.x;
+      state.pan.y = e.clientY - state.dragStart.y;
+      applyVaultTransform(false);
+    });
+
+    window.addEventListener('mouseup', () => {
+      state.isDragging = false;
+    });
+
+    // Zoom con rueda del ratón
+    els.vaultViewport.addEventListener('wheel', (e) => {
+      e.preventDefault();
+      const rect = els.vaultViewport.getBoundingClientRect();
+      const mouseX = e.clientX - rect.left;
+      const mouseY = e.clientY - rect.top;
+
+      const delta = e.deltaY < 0 ? 1.1 : 0.9;
+      const newZoom = Math.min(1.6, Math.max(0.4, state.zoom * delta));
+
+      state.pan.x = mouseX - (mouseX - state.pan.x) * (newZoom / state.zoom);
+      state.pan.y = mouseY - (mouseY - state.pan.y) * (newZoom / state.zoom);
+      state.zoom = newZoom;
+      applyVaultTransform(false);
+    }, { passive: false });
+
+    // Touch drag básico para dispositivos móviles
+    let lastTouch = null;
+    els.vaultViewport.addEventListener('touchstart', (e) => {
+      if (e.touches.length === 1 && !e.target.closest('.vault-node')) {
+        lastTouch = { x: e.touches[0].clientX, y: e.touches[0].clientY };
+      }
+    }, { passive: true });
+
+    els.vaultViewport.addEventListener('touchmove', (e) => {
+      if (e.touches.length === 1 && lastTouch) {
+        const dx = e.touches[0].clientX - lastTouch.x;
+        const dy = e.touches[0].clientY - lastTouch.y;
+        state.pan.x += dx;
+        state.pan.y += dy;
+        lastTouch = { x: e.touches[0].clientX, y: e.touches[0].clientY };
+        applyVaultTransform(false);
+      }
+    }, { passive: true });
+
+    els.vaultViewport.addEventListener('touchend', () => { lastTouch = null; });
+
+    // ============================================================================
+    // COREOGRAFÍA DE LA SONDA / ARTEFACTO DE ESCANEO
+    // ============================================================================
+    function setProbeAppearance(statusKey, isActivelyInspecting = false) {
+      const color = STATUS_COLORS[statusKey]?.hex || '#22d3ee';
+      document.getElementById('probeOuterStroke').setAttribute('stroke', color);
+      document.getElementById('probeInnerStroke').setAttribute('stroke', color);
+      document.getElementById('probeCrosshair').setAttribute('stroke', color);
+      document.getElementById('probeCore').setAttribute('fill', color);
+      document.getElementById('probeAura').setAttribute('fill', STATUS_COLORS[statusKey]?.bg || 'rgba(34,211,238,0.1)');
+
+      if (isActivelyInspecting) {
+        els.scannerProbe.classList.add('probe-scanning');
+      } else {
+        els.scannerProbe.classList.remove('probe-scanning');
+      }
+    }
+
+    function positionProbe(x, y) {
+      state.probePos = { x, y };
+      els.scannerProbe.setAttribute('transform', `translate(${x}, ${y})`);
+
+      // Posicionar tarjeta flotante contextual sin salirse del lienzo
+      const calloutX = x > 1150 ? x - 310 : x + 36;
+      const calloutY = y > 460 ? y - 125 : y - 35;
+      els.probeCallout.style.left = `${calloutX}px`;
+      els.probeCallout.style.top = `${calloutY}px`;
+    }
+
+    function triggerAnomalyRipple(node, statusKey) {
+      const color = STATUS_COLORS[statusKey].hex;
+      // Onda en el nodo afectado
+      const circle = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+      circle.setAttribute('cx', node.x);
+      circle.setAttribute('cy', node.y);
+      circle.setAttribute('r', '38');
+      circle.setAttribute('fill', 'none');
+      circle.setAttribute('stroke', color);
+      circle.setAttribute('stroke-width', '2.5');
+      circle.classList.add('ripple-wave');
+      els.ripplesGroup.appendChild(circle);
+      setTimeout(() => circle.remove(), 1300);
+
+      // Resaltar brevemente nodos dependientes aguas abajo (impacto en cascada)
+      node.downstream.forEach(downId => {
+        const downCard = document.getElementById(`node-card-${downId}`);
+        if (downCard && !state.auditedResults[downId]) {
+          downCard.style.boxShadow = `0 0 0 1px ${color}66, 0 0 18px ${color}25`;
+          setTimeout(() => {
+            if (!state.auditedResults[downId]) downCard.style.boxShadow = '';
+          }, 950);
+        }
+      });
+    }
+
+    // Interpolación cúbica Bezier para mover la sonda siguiendo exactamente las líneas
+    function cubicBezierPoint(t, p0, p1, p2, p3) {
+      const u = 1 - t;
+      const tt = t * t;
+      const uu = u * u;
+      const uuu = uu * u;
+      const ttt = tt * t;
+      return {
+        x: uuu * p0.x + 3 * uu * t * p1.x + 3 * u * tt * p2.x + ttt * p3.x,
+        y: uuu * p0.y + 3 * uu * t * p1.y + 3 * u * tt * p2.y + ttt * p3.y
+      };
+    }
+
+    // Easing con inercia: acelera en el tramo y desacelera suavemente al aproximarse al nodo
+    function easeInOutCubic(t) {
+      return t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
+    }
+
+    function animateProbeBetweenNodes(fromNode, toNode, runId) {
+      return new Promise(resolve => {
+        if (state.speedMultiplier === 'instant' || runId !== state.scanRunId) {
+          positionProbe(toNode.x, toNode.y);
+          state.trailPoints.push(`${toNode.x},${toNode.y}`);
+          els.probeTrail.setAttribute('d', `M ${state.trailPoints.join(' L ')}`);
+          resolve();
+          return;
+        }
+
+        const dx = Math.abs(toNode.x - fromNode.x) * 0.52;
+        const p0 = { x: fromNode.x, y: fromNode.y };
+        const p1 = { x: fromNode.x + dx, y: fromNode.y };
+        const p2 = { x: toNode.x - dx, y: toNode.y };
+        const p3 = { x: toNode.x, y: toNode.y };
+
+        // Si no hay arista directa (ej. salto de rama tras completar una bifurcación), arco suave
+        const hasDirectEdge = FLOW_EDGES.some(e => e.from === fromNode.id && e.to === toNode.id);
+        if (!hasDirectEdge) {
+          p1.x = fromNode.x;
+          p1.y = (fromNode.y + toNode.y) / 2;
+          p2.x = toNode.x;
+          p2.y = (fromNode.y + toNode.y) / 2;
+        }
+
+        const baseDuration = 680 * toNode.complexity;
+        const duration = baseDuration / state.speedMultiplier;
+        const startTime = performance.now();
+
+        function step(now) {
+          if (runId !== state.scanRunId) return resolve();
+          const rawT = Math.min(1, (now - startTime) / duration);
+          const easedT = easeInOutCubic(rawT);
+          const pt = cubicBezierPoint(easedT, p0, p1, p2, p3);
+
+          positionProbe(pt.x, pt.y);
+          state.trailPoints.push(`${pt.x.toFixed(1)},${pt.y.toFixed(1)}`);
+          els.probeTrail.setAttribute('d', `M ${state.trailPoints.join(' L ')}`);
+
+          if (state.cameraFollow && rawT > 0.15) {
+            focusCameraOnPoint(pt.x, pt.y, false);
+          }
+
+          if (rawT < 1) {
+            requestAnimationFrame(step);
+          } else {
+            resolve();
+          }
+        }
+        requestAnimationFrame(step);
+      });
+    }
+
+    function sleep(ms, runId) {
+      if (state.speedMultiplier === 'instant' || runId !== state.scanRunId) return Promise.resolve();
+      return new Promise(res => setTimeout(res, ms / state.speedMultiplier));
+    }
+
+    // ============================================================================
+    // EJECUCIÓN DE LA AUDITORÍA COMPLETA SOFS
+    // ============================================================================
+    function resetVaultVisuals() {
+      state.auditedResults = {};
+      state.selectedNodeId = null;
+      state.trailPoints = [];
+      els.probeTrail.setAttribute('d', '');
+      els.probeCallout.classList.add('hidden');
+      els.scannerProbe.style.opacity = '0';
+      els.reasoningFeed.innerHTML = '';
+      els.emptyStreamState.classList.remove('hidden');
+      els.reportReadyDot.classList.add('hidden');
+
+      FLOW_NODES.forEach(node => {
+        const card = document.getElementById(`node-card-${node.id}`);
+        const badge = document.getElementById(`node-badge-${node.id}`);
+        card.className = 'vault-node absolute rounded-xl bg-obsidian-850/95 border border-slate-700/80 p-3 shadow-xl transition-all duration-300 cursor-pointer hover:border-slate-500';
+        card.style.boxShadow = '';
+        badge.className = 'font-mono text-[9px] px-1.5 py-0.5 rounded bg-slate-800/80 text-slate-500';
+        badge.textContent = 'EN ESPERA';
+      });
+
+      updateScoreDashboard();
+    }
+
+    async function runSoFsAudit() {
+      state.scanRunId += 1;
+      const runId = state.scanRunId;
+      state.isScanning = true;
+      state.isComplete = false;
+      resetVaultVisuals();
+      switchTab('stream');
+
+      els.startBtnText.textContent = 'Escaneando...';
+      els.startScanBtn.classList.add('opacity-85');
+      els.emptyStreamState.classList.add('hidden');
+
+      const preset = AUDIT_PRESETS[state.presetKey];
+      const firstNode = FLOW_NODES.find(n => n.id === SCAN_SEQUENCE[0]);
+
+      // Despliegue inicial de la sonda en el Trigger
+      els.scannerProbe.style.opacity = '1';
+      setProbeAppearance('scanning', true);
+      positionProbe(firstNode.x, firstNode.y);
+      state.trailPoints.push(`${firstNode.x},${firstNode.y}`);
+      focusCameraOnPoint(firstNode.x, firstNode.y, true);
+
+      await sleep(320, runId);
+
+      let prevNode = firstNode;
+
+      for (let i = 0; i < SCAN_SEQUENCE.length; i++) {
+        if (runId !== state.scanRunId) return;
+        const nodeId = SCAN_SEQUENCE[i];
+        const node = FLOW_NODES.find(n => n.id === nodeId);
+        const finding = preset.findings[nodeId];
+
+        // 1. Desplazamiento de la sonda hasta el nodo
+        setProbeAppearance('scanning', false);
+        if (i > 0) {
+          els.probeCallout.classList.add('hidden');
+          await animateProbeBetweenNodes(prevNode, node, runId);
+        }
+
+        if (runId !== state.scanRunId) return;
+
+        // 2. Anclaje e inspección en el nodo
+        setProbeAppearance('scanning', true);
+        highlightNodeCard(node.id, 'scanning');
+
+        if (state.speedMultiplier !== 'instant') {
+          els.probeCallout.classList.remove('hidden');
+          els.calloutStepLabel.textContent = `SECCIÓN ${i + 1}/${SCAN_SEQUENCE.length}`;
+          els.calloutNodeTag.textContent = node.code;
+          els.calloutTitle.textContent = node.name;
+          els.calloutThought.textContent = finding.thought;
+        }
+
+        // Pausa de razonamiento proporcional a la complejidad del nodo
+        await sleep(880 * node.complexity, runId);
+        if (runId !== state.scanRunId) return;
+
+        // 3. Emisión del veredicto en el nodo
+        state.auditedResults[node.id] = finding;
+        setProbeAppearance(finding.status, false);
+        highlightNodeCard(node.id, finding.status);
+
+        if (finding.status === 'critical' || finding.status === 'warning') {
+          triggerAnomalyRipple(node, finding.status);
+          await sleep(350, runId);
+        }
+
+        appendReasoningCard(node, finding, i + 1);
+        updateScoreDashboard();
+        prevNode = node;
+      }
+
+      if (runId !== state.scanRunId) return;
+
+      // Escaneo finalizado
+      state.isScanning = false;
+      state.isComplete = true;
+      els.probeCallout.classList.add('hidden');
+      els.startBtnText.textContent = 'Re-escanear Flow';
+      els.startScanBtn.classList.remove('opacity-85');
+      els.reportReadyDot.classList.remove('hidden');
+
+      buildExecutiveReport();
+      if (state.cameraFollow) {
+        fitVaultToViewport();
+      }
+    }
+
+    function highlightNodeCard(nodeId, statusKey) {
+      const card = document.getElementById(`node-card-${nodeId}`);
+      const badge = document.getElementById(`node-badge-${nodeId}`);
+      const st = STATUS_COLORS[statusKey];
+
+      card.className = `vault-node absolute rounded-xl bg-obsidian-850/95 border-2 ${st.border} p-3 shadow-xl transition-all duration-300 cursor-pointer`;
+      card.style.boxShadow = `0 0 24px ${st.bg}`;
+      badge.className = `font-mono text-[9px] px-1.5 py-0.5 rounded font-semibold ${st.text}`;
+      badge.style.backgroundColor = st.bg;
+      badge.textContent = st.badge;
+    }
+
+    // ============================================================================
+    // PANEL DE RAZONAMIENTO EN VIVO E INFORME SIMPLIFICADO
+    // ============================================================================
+    function appendReasoningCard(node, finding, stepNum) {
+      const st = STATUS_COLORS[finding.status];
+      const item = document.createElement('div');
+      item.id = `feed-item-${node.id}`;
+      item.className = `rounded-xl bg-obsidian-900/90 border border-slate-800 hover:border-slate-700 p-3 transition cursor-pointer`;
+      item.innerHTML = `
+        <div class="flex items-center justify-between gap-2 mb-1">
+          <div class="flex items-center gap-2 min-w-0">
+            <span class="font-mono text-[10px] text-slate-500">#0${stepNum}</span>
+            <span class="font-mono text-[10px] px-1.5 py-0.5 rounded bg-slate-800 text-slate-300">${node.code}</span>
+            <span class="text-xs font-semibold text-white truncate">${node.name}</span>
+          </div>
+          <span class="font-mono text-[10px] px-1.5 py-0.5 rounded font-semibold ${st.text} shrink-0" style="background:${st.bg}">
+            ${st.badge}
+          </span>
+        </div>
+        <p class="text-[11px] font-mono text-slate-300 leading-relaxed mb-1.5">${finding.thought}</p>
+        <p class="text-[11px] text-slate-400 leading-snug">${finding.detail}</p>
+        ${finding.status !== 'ok' ? `
+          <div class="mt-2 pt-2 border-t border-slate-800/80 text-[11px] text-cyan-300 flex items-start gap-1.5">
+            <span class="font-mono font-bold shrink-0">FIX →</span>
+            <span>${finding.fix}</span>
+          </div>
+        ` : ''}
+      `;
+
+      item.addEventListener('click', () => selectNodeForInspection(node.id));
+      els.reasoningFeed.appendChild(item);
+      if (els.panelScrollArea) {
+        els.panelScrollArea.scrollTop = els.panelScrollArea.scrollHeight;
+      }
+    }
+
+    function selectNodeForInspection(nodeId) {
+      const node = FLOW_NODES.find(n => n.id === nodeId);
+      if (!node) return;
+      state.selectedNodeId = nodeId;
+
+      // Enfocar cámara en el nodo seleccionado
+      const prevFollow = state.cameraFollow;
+      state.cameraFollow = true;
+      focusCameraOnPoint(node.x, node.y, true);
+      state.cameraFollow = prevFollow;
+
+      // Mover sonda suavemente al nodo si ya terminó el escaneo
+      if (!state.isScanning && state.auditedResults[nodeId]) {
+        const finding = state.auditedResults[nodeId];
+        els.scannerProbe.style.opacity = '1';
+        setProbeAppearance(finding.status, false);
+        positionProbe(node.x, node.y);
+      }
+
+      // Resaltar tarjeta en el feed
+      switchTab('stream');
+      const feedItem = document.getElementById(`feed-item-${nodeId}`);
+      if (feedItem) {
+        document.querySelectorAll('#reasoningFeed > div').forEach(el => el.classList.remove('ring-1', 'ring-cyan-400'));
+        feedItem.classList.add('ring-1', 'ring-cyan-400');
+        feedItem.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+      }
+    }
+
+    function updateScoreDashboard() {
+      const entries = Object.values(state.auditedResults);
+      const total = FLOW_NODES.length;
+      const auditedCount = entries.length;
+
+      let ok = 0, warn = 0, crit = 0;
+      entries.forEach(f => {
+        if (f.status === 'ok') ok++;
+        else if (f.status === 'warning') warn++;
+        else if (f.status === 'critical') crit++;
+      });
+
+      els.countOk.textContent = ok;
+      els.countWarn.textContent = warn;
+      els.countCrit.textContent = crit;
+      els.scanProgressText.textContent = `${auditedCount} / ${total} nodos auditados`;
+
+      if (auditedCount === 0) {
+        els.healthScoreText.textContent = '--';
+        els.mobileScoreBadge.textContent = '--';
+        els.scoreArc.style.strokeDashoffset = '144.5';
+        els.scoreArc.setAttribute('stroke', '#22d3ee');
+        els.flowVerdictText.textContent = 'Listo para escanear';
+        els.flowVerdictText.className = 'text-sm font-semibold text-slate-200';
+        return;
+      }
+
+      // Cálculo dinámico del índice de salud (0 - 100)
+      const rawScore = Math.max(12, Math.round(100 - (crit * 24) - (warn * 9)));
+      els.healthScoreText.textContent = `${rawScore}`;
+      els.mobileScoreBadge.textContent = `${rawScore}/100`;
+
+      const circumference = 144.5;
+      const offset = circumference - (rawScore / 100) * circumference;
+      els.scoreArc.style.strokeDashoffset = `${offset}`;
+
+      if (rawScore >= 80) {
+        els.scoreArc.setAttribute('stroke', '#34d399');
+        els.flowVerdictText.textContent = 'Saludable / Listo Prod';
+        els.flowVerdictText.className = 'text-sm font-semibold text-emerald-400';
+      } else if (rawScore >= 55) {
+        els.scoreArc.setAttribute('stroke', '#fbbf24');
+        els.flowVerdictText.textContent = 'Requiere Ajustes';
+        els.flowVerdictText.className = 'text-sm font-semibold text-amber-400';
+      } else {
+        els.scoreArc.setAttribute('stroke', '#f43f5e');
+        els.flowVerdictText.textContent = 'Riesgo Crítico Detectado';
+        els.flowVerdictText.className = 'text-sm font-semibold text-rose-400';
+      }
+    }
+
+    function buildExecutiveReport() {
+      const preset = AUDIT_PRESETS[state.presetKey];
+      const critNodes = [];
+      const warnNodes = [];
+
+      SCAN_SEQUENCE.forEach(id => {
+        const node = FLOW_NODES.find(n => n.id === id);
+        const f = state.auditedResults[id];
+        if (!f) return;
+        if (f.status === 'critical') critNodes.push({ node, f });
+        if (f.status === 'warning') warnNodes.push({ node, f });
+      });
+
+      const score = els.healthScoreText.textContent;
+
+      els.reportContent.innerHTML = `
+        <div class="rounded-xl bg-obsidian-900 border border-slate-800 p-3.5 space-y-2">
+          <div class="flex items-center justify-between">
+            <span class="text-[10px] font-mono uppercase tracking-wider text-cyan-400">Resumen Ejecutivo SoFs</span>
+            <span class="text-[10px] font-mono text-slate-400">Score: <strong class="text-white">${score}/100</strong></span>
+          </div>
+          <p class="text-xs text-slate-300 leading-relaxed">${preset.summary}</p>
+          <div class="pt-1 text-[11px] text-slate-400">
+            Se detectaron <strong class="text-rose-400">${critNodes.length} hallazgos críticos</strong> y <strong class="text-amber-400">${warnNodes.length} advertencias</strong> que impactan la estabilidad bajo este perfil de auditoría.
+          </div>
+        </div>
+
+        ${critNodes.length > 0 ? `
+          <div class="space-y-2">
+            <h3 class="text-[11px] font-mono uppercase tracking-wider text-rose-400 flex items-center gap-1.5">
+              <span class="w-2 h-2 rounded-full bg-rose-500"></span>
+              Prioridad Alta — Acción Inmediata (${critNodes.length})
+            </h3>
+            ${critNodes.map(({ node, f }) => `
+              <div onclick="selectNodeForInspection('${node.id}')" class="rounded-xl bg-rose-500/5 border border-rose-500/30 p-3 cursor-pointer hover:bg-rose-500/10 transition">
+                <div class="flex items-center justify-between mb-1">
+                  <span class="text-xs font-semibold text-white">${node.name}</span>
+                  <span class="font-mono text-[10px] text-rose-300">${node.code}</span>
+                </div>
+                <p class="text-[11px] text-slate-300 mb-2">${f.detail}</p>
+                <div class="text-[11px] font-mono text-emerald-300 bg-obsidian-950/80 rounded-lg p-2 border border-slate-800">
+                  ✓ Solución: ${f.fix}
+                </div>
+              </div>
+            `).join('')}
+          </div>
+        ` : ''}
+
+        ${warnNodes.length > 0 ? `
+          <div class="space-y-2">
+            <h3 class="text-[11px] font-mono uppercase tracking-wider text-amber-400 flex items-center gap-1.5">
+              <span class="w-2 h-2 rounded-full bg-amber-400"></span>
+              Optimizaciones Recomendadas (${warnNodes.length})
+            </h3>
+            ${warnNodes.map(({ node, f }) => `
+              <div onclick="selectNodeForInspection('${node.id}')" class="rounded-xl bg-amber-500/5 border border-amber-500/30 p-3 cursor-pointer hover:bg-amber-500/10 transition">
+                <div class="flex items-center justify-between mb-1">
+                  <span class="text-xs font-semibold text-white">${node.name}</span>
+                  <span class="font-mono text-[10px] text-amber-300">${node.code}</span>
+                </div>
+                <p class="text-[11px] text-slate-300 mb-2">${f.detail}</p>
+                <div class="text-[11px] font-mono text-cyan-300 bg-obsidian-950/80 rounded-lg p-2 border border-slate-800">
+                  → Mejora: ${f.fix}
+                </div>
+              </div>
+            `).join('')}
+          </div>
+        ` : ''}
+
+        <button id="copyReportBtn" class="w-full py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 border border-slate-700 text-xs font-medium text-white transition flex items-center justify-center gap-2 cursor-pointer">
+          <svg class="w-3.5 h-3.5 text-cyan-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <rect x="9" y="9" width="13" height="13" rx="2" />
+            <path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1" />
+          </svg>
+          <span id="copyReportText">Copiar Informe Markdown</span>
+        </button>
+      `;
+
+      document.getElementById('copyReportBtn').addEventListener('click', copyMarkdownReport);
+    }
+
+    function copyMarkdownReport() {
+      const preset = AUDIT_PRESETS[state.presetKey];
+      const lines = [
+        `# State of Flows (SoFs) — Informe de Auditoría`,
+        `- **Flow:** prod_onboarding_billing_pipeline`,
+        `- **Preset:** ${preset.label}`,
+        `- **Health Score:** ${els.healthScoreText.textContent}/100 (${els.flowVerdictText.textContent})`,
+        ``,
+        `## Hallazgos por Sección`
+      ];
+
+      SCAN_SEQUENCE.forEach(id => {
+        const node = FLOW_NODES.find(n => n.id === id);
+        const f = state.auditedResults[id];
+        if (f) {
+          lines.push(`- **[${f.status.toUpperCase()}] ${node.code} ${node.name}:** ${f.detail} *(Fix: ${f.fix})*`);
+        }
+      });
+
+      const textarea = document.createElement('textarea');
+      textarea.value = lines.join('\n');
+      document.body.appendChild(textarea);
+      textarea.select();
+      document.execCommand('copy');
+      document.body.removeChild(textarea);
+
+      const label = document.getElementById('copyReportText');
+      label.textContent = '¡Informe copiado al portapapeles!';
+      setTimeout(() => { label.textContent = 'Copiar Informe Markdown'; }, 2200);
+    }
+
+    // ============================================================================
+    // EVENTOS DE INTERFAZ Y CONTROLES
+    // ============================================================================
+    function updatePresetHeader() {
+      els.activePresetTitle.textContent = AUDIT_PRESETS[state.presetKey].label;
+    }
+
+    function setCameraFollow(enabled) {
+      state.cameraFollow = enabled;
+      if (enabled) {
+        els.cameraFollowBtn.className = 'hidden sm:flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-medium border border-cyan-500/40 bg-cyan-500/10 text-cyan-300 transition';
+        els.cameraDot.className = 'w-1.5 h-1.5 rounded-full bg-cyan-400 animate-pulse';
+      } else {
+        els.cameraFollowBtn.className = 'hidden sm:flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-medium border border-slate-700 bg-obsidian-850 text-slate-400 transition';
+        els.cameraDot.className = 'w-1.5 h-1.5 rounded-full bg-slate-500';
+      }
+    }
+
+    function switchTab(tab) {
+      state.activeTab = tab;
+      if (tab === 'stream') {
+        els.streamView.classList.remove('hidden');
+        els.reportView.classList.add('hidden');
+        els.tabStreamBtn.className = 'py-1.5 rounded-md bg-slate-800 text-white transition';
+        els.tabReportBtn.className = 'py-1.5 rounded-md text-slate-400 hover:text-white transition flex items-center justify-center gap-1.5';
+      } else {
+        els.streamView.classList.add('hidden');
+        els.reportView.classList.remove('hidden');
+        els.tabReportBtn.className = 'py-1.5 rounded-md bg-slate-800 text-white transition flex items-center justify-center gap-1.5';
+        els.tabStreamBtn.className = 'py-1.5 rounded-md text-slate-400 hover:text-white transition';
+        if (!state.isComplete && Object.keys(state.auditedResults).length === 0) {
+          els.reportContent.innerHTML = `<div class="text-center py-10 text-xs text-slate-400 border border-dashed border-slate-800 rounded-xl p-4">Ejecuta un escaneo SoFs para generar el informe simplificado de este preset.</div>`;
+        } else if (!state.isComplete) {
+          buildExecutiveReport();
+        }
+      }
+    }
+
+    els.startScanBtn.addEventListener('click', runSoFsAudit);
+
+    els.presetSelect.addEventListener('change', (e) => {
+      state.presetKey = e.target.value;
+      updatePresetHeader();
+      resetVaultVisuals();
+      els.startBtnText.textContent = 'Iniciar Escaneo SoFs';
+    });
+
+    document.querySelectorAll('.speed-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        document.querySelectorAll('.speed-btn').forEach(b => {
+          b.className = 'speed-btn px-2 py-1 rounded-md text-slate-400 hover:text-white transition';
+        });
+        btn.className = 'speed-btn px-2 py-1 rounded-md bg-slate-700/80 text-white transition';
+        const val = btn.getAttribute('data-speed');
+        state.speedMultiplier = val === 'instant' ? 'instant' : parseFloat(val);
+      });
+    });
+
+    els.cameraFollowBtn.addEventListener('click', () => setCameraFollow(!state.cameraFollow));
+    els.tabStreamBtn.addEventListener('click', () => switchTab('stream'));
+    els.tabReportBtn.addEventListener('click', () => switchTab('report'));
+
+    document.getElementById('zoomInBtn').addEventListener('click', () => {
+      state.zoom = Math.min(1.6, state.zoom * 1.15);
+      applyVaultTransform(true);
+    });
+    document.getElementById('zoomOutBtn').addEventListener('click', () => {
+      state.zoom = Math.max(0.4, state.zoom * 0.85);
+      applyVaultTransform(true);
+    });
+    document.getElementById('resetViewBtn').addEventListener('click', fitVaultToViewport);
+
+    // Panel móvil
+    document.getElementById('togglePanelMobileBtn').addEventListener('click', () => {
+      els.reportSidebar.classList.remove('translate-x-full');
+    });
+    document.getElementById('closePanelMobileBtn').addEventListener('click', () => {
+      els.reportSidebar.classList.add('translate-x-full');
+    });
+
+    window.addEventListener('resize', fitVaultToViewport);
+
+    // Inicializar al cargar
+    window.addEventListener('load', initVault);
+  </script>
+</body>
+</html>
