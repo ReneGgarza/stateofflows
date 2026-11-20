@@ -115,7 +115,7 @@
       <!-- Navegación Desktop -->
       <nav class="hidden md:flex items-center gap-7 text-xs font-medium text-slate-400">
         <a href="#como-funciona" class="hover:text-white transition">Cómo funciona</a>
-        <a href="#boveda-demo" class="hover:text-white transition">Bóveda Interactiva</a>
+        <a href="#boveda-demo" class="hover:text-white transition">Demo en Vivo</a>
         <a href="#presets" class="hover:text-white transition">Presets de Auditoría</a>
         <a href="#informe" class="hover:text-white transition">Informe Simplificado</a>
         <a href="#ecosistemas" class="hover:text-white transition">Integraciones</a>
@@ -123,8 +123,9 @@
 
       <!-- Acciones -->
       <div class="flex items-center gap-2.5">
-        <a href="#boveda-demo" class="hidden sm:inline-flex items-center gap-1.5 px-3.5 py-2 rounded-lg text-xs font-medium text-slate-300 hover:text-white border border-slate-800 bg-obsidian-900 hover:border-slate-700 transition">
-          Probar Sonda
+        <a href="prototype.html" class="hidden sm:inline-flex items-center gap-1.5 px-3.5 py-2 rounded-lg text-xs font-medium text-cyan-300 hover:text-white border border-cyan-500/30 bg-cyan-500/10 hover:bg-cyan-500/20 transition">
+          <span>Bóveda Full-Screen</span>
+          <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 3h6v6M9 21H3v-6M21 3l-7 7M3 21l7-7"/></svg>
         </a>
         <button id="openWaitlistBtn" class="inline-flex items-center gap-2 px-4 py-2 rounded-lg text-xs font-semibold bg-cyan-500 hover:bg-cyan-400 text-slate-950 shadow-[0_0_20px_rgba(34,211,238,0.28)] transition active:scale-95 cursor-pointer">
           <span>Acceso Anticipado</span>
@@ -158,9 +159,9 @@
         </p>
 
         <div class="flex flex-col sm:flex-row items-center justify-center gap-3">
-          <a href="#boveda-demo" class="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-6 py-3.5 rounded-xl text-sm font-semibold bg-cyan-500 hover:bg-cyan-400 text-slate-950 shadow-[0_0_30px_rgba(34,211,238,0.3)] transition">
-            <svg class="w-4 h-4" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
-            <span>Desplegar Escaneo en Vivo</span>
+          <a href="prototype.html" class="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-6 py-3.5 rounded-xl text-sm font-semibold bg-cyan-500 hover:bg-cyan-400 text-slate-950 shadow-[0_0_30px_rgba(34,211,238,0.3)] transition">
+            <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M15 3h6v6M9 21H3v-6M21 3l-7 7M3 21l7-7"/></svg>
+            <span>Abrir Bóveda Interactiva</span>
           </a>
           <button id="openJsonModalBtn" class="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-6 py-3.5 rounded-xl text-sm font-medium bg-obsidian-850 hover:bg-obsidian-800 text-slate-200 border border-slate-700/80 transition cursor-pointer">
             <svg class="w-4 h-4 text-cyan-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 18l6-6-6-6M8 6l-6 6 6 6"/></svg>
@@ -197,6 +198,11 @@
               <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
               <span id="runDemoBtnLabel">Escanear Bóveda</span>
             </button>
+
+            <a href="prototype.html" title="Abrir prototipo completo con zoom, auto-cámara y reporte Markdown" class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium bg-obsidian-850 hover:bg-obsidian-800 text-slate-300 hover:text-white border border-slate-700/80 transition">
+              <span>Pantalla Completa</span>
+              <svg class="w-3.5 h-3.5 text-cyan-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6M15 3h6v6M10 14L21 3"/></svg>
+            </a>
           </div>
         </div>
 
@@ -520,7 +526,7 @@
   </section>
 
   <!-- ===================================================================== -->
-  <!-- SECCIÓN 5: ECOSISTEMAS COMPATIBLES + CTA FINAL                        -->
+  <!-- SECCIÓN 5: ECOSISTEMAS COMPATIBLES + CTA FINAL (WAITLIST REAL)        -->
   <!-- ===================================================================== -->
   <section id="ecosistemas" class="py-20 border-t border-slate-800/60">
     <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
@@ -546,13 +552,40 @@
         <p class="text-sm sm:text-base text-slate-400 max-w-xl mx-auto mb-8 relative z-10">
           Únete a la lista de acceso anticipado de <strong class="text-white">State of Flows (SoFs)</strong> y sé de los primeros en auditar tus flujos con nuestra sonda espacial.
         </p>
-        <form id="footerWaitlistForm" class="max-w-md mx-auto flex flex-col sm:flex-row gap-2.5 relative z-10">
-          <input type="email" required placeholder="tu@empresa.com" class="flex-1 px-4 py-3 rounded-xl bg-obsidian-950 border border-slate-700 text-sm text-white placeholder-slate-500 focus:outline-none focus:border-cyan-400" />
-          <button type="submit" class="px-6 py-3 rounded-xl bg-cyan-500 hover:bg-cyan-400 text-slate-950 font-semibold text-sm shadow-[0_0_25px_rgba(34,211,238,0.3)] transition cursor-pointer">
-            Solicitar Acceso
-          </button>
+
+        <form id="footerWaitlistForm" class="max-w-lg mx-auto space-y-3 relative z-10">
+          <div class="flex flex-col sm:flex-row gap-2.5">
+            <input
+              id="waitlistEmailInput"
+              name="email"
+              type="email"
+              required
+              placeholder="tu@empresa.com"
+              class="flex-1 px-4 py-3 rounded-xl bg-obsidian-950 border border-slate-700 text-sm text-white placeholder-slate-500 focus:outline-none focus:border-cyan-400"
+            />
+            <select
+              id="waitlistStackSelect"
+              name="stack"
+              aria-label="Stack principal"
+              class="px-3.5 py-3 rounded-xl bg-obsidian-950 border border-slate-700 text-xs font-mono text-slate-300 focus:outline-none focus:border-cyan-400 cursor-pointer"
+            >
+              <option value="n8n">Stack: n8n</option>
+              <option value="Make">Stack: Make</option>
+              <option value="Zapier">Stack: Zapier</option>
+              <option value="LangGraph / AI">Stack: AI Agents</option>
+              <option value="Custom / Webhooks">Stack: Custom API</option>
+            </select>
+            <button
+              id="waitlistSubmitBtn"
+              type="submit"
+              class="px-6 py-3 rounded-xl bg-cyan-500 hover:bg-cyan-400 text-slate-950 font-semibold text-sm shadow-[0_0_25px_rgba(34,211,238,0.3)] transition cursor-pointer shrink-0"
+            >
+              Solicitar Acceso
+            </button>
+          </div>
         </form>
-        <p id="footerWaitlistMsg" class="hidden mt-3 text-xs font-mono text-emerald-400 relative z-10">
+
+        <p id="footerWaitlistMsg" class="hidden mt-4 text-xs font-mono text-emerald-400 relative z-10">
           ✓ Registro confirmado. Te notificaremos cuando tu bóveda SoFs esté lista.
         </p>
       </div>
@@ -569,8 +602,10 @@
         <span class="font-semibold text-slate-300">State of Flows (SoFs)</span>
         <span>· Observabilidad y Auditoría Visual</span>
       </div>
-      <div class="font-mono text-[11px]">
-        SYSTEM STATUS: NOMINAL // v0.9 PREVIEW
+      <div class="flex items-center gap-4 font-mono text-[11px]">
+        <a href="prototype.html" class="text-cyan-400 hover:underline">Bóveda Full-Screen</a>
+        <span>|</span>
+        <span>SYSTEM STATUS: NOMINAL // v0.9</span>
       </div>
     </div>
   </footer>
@@ -606,6 +641,15 @@
   </div>
 
   <script>
+    /**
+     * ========================================================================
+     * CONFIGURACIÓN DE CAPTURA DE LEADS (WAITLIST)
+     * Pega aquí tu URL de Formspree (ej: "https://formspree.io/f/tu_id")
+     * o de Google Apps Script cuando la tengas lista.
+     * ========================================================================
+     */
+    const WAITLIST_ENDPOINT = "";
+
     /**
      * ========================================================================
      * MOTOR INTERACTIVO DE LA BÓVEDA EN LA ONE-PAGE DE STATE OF FLOWS (SoFs)
@@ -833,16 +877,46 @@
     document.getElementById('runDemoScanBtn').addEventListener('click', runHeroScan);
     document.getElementById('demoPresetSelect').addEventListener('change', runHeroScan);
 
-    // Waitlist y Modal JSON
+    // Waitlist con envío real a endpoint (Formspree / Apps Script) + respaldo local
     document.getElementById('openWaitlistBtn').addEventListener('click', () => {
       document.getElementById('footerWaitlistForm').scrollIntoView({ behavior: 'smooth', block: 'center' });
-      document.querySelector('#footerWaitlistForm input').focus();
+      document.getElementById('waitlistEmailInput').focus();
     });
 
-    document.getElementById('footerWaitlistForm').addEventListener('submit', (e) => {
+    document.getElementById('footerWaitlistForm').addEventListener('submit', async (e) => {
       e.preventDefault();
-      document.getElementById('footerWaitlistMsg').classList.remove('hidden');
-      e.target.reset();
+      const email = document.getElementById('waitlistEmailInput').value.trim();
+      const stack = document.getElementById('waitlistStackSelect').value;
+      const submitBtn = document.getElementById('waitlistSubmitBtn');
+      const msgEl = document.getElementById('footerWaitlistMsg');
+
+      submitBtn.disabled = true;
+      submitBtn.textContent = 'Registrando...';
+
+      try {
+        if (WAITLIST_ENDPOINT) {
+          await fetch(WAITLIST_ENDPOINT, {
+            method: 'POST',
+            headers: { 'Accept': 'application/json', 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              email,
+              stack,
+              source: 'State of Flows Landing',
+              timestamp: new Date().toISOString()
+            })
+          });
+        }
+        msgEl.textContent = `✓ Registro confirmado para ${email} (${stack}). Te notificaremos pronto.`;
+        msgEl.className = 'mt-4 text-xs font-mono text-emerald-400 relative z-10';
+        e.target.reset();
+      } catch (err) {
+        msgEl.textContent = '⚠ No se pudo conectar al servidor en este momento. Intenta de nuevo.';
+        msgEl.className = 'mt-4 text-xs font-mono text-amber-400 relative z-10';
+      } finally {
+        msgEl.classList.remove('hidden');
+        submitBtn.disabled = false;
+        submitBtn.textContent = 'Solicitar Acceso';
+      }
     });
 
     const jsonModal = document.getElementById('jsonAuditModal');
@@ -890,3 +964,20 @@
   </script>
 </body>
 </html>
+```
+
+---
+
+### Cómo activarlo en tu GitHub en 2 minutos:
+
+1. **Conecta la Bóveda Full-Screen:**
+   * En tu repositorio `stateofflows`, asegúrate de que el archivo del prototipo interactivo se llame **`prototype.html`** (renómbralo con el ícono del lápiz si aún tiene el nombre largo).
+   * Reemplaza el contenido de **`index.html`** con esta nueva versión que ya apunta a `prototype.html`.
+
+2. **Conecta tus correos gratis con Formspree (sin servidor):**
+   * Entra a [formspree.io](https://formspree.io) (tiene plan gratuito de 50 envíos/mes), crea un formulario nuevo llamado `State of Flows Waitlist` y copia el enlace que te da (algo como `https://formspree.io/f/xyza1234`).
+   * En tu nuevo `index.html`, busca la línea `const WAITLIST_ENDPOINT = "";` y pega tu enlace dentro de las comillas:
+     ```javascript
+     const WAITLIST_ENDPOINT = "https://formspree.io/f/xyza1234";
+     ```
+   * Guarda con **Commit changes** y en ~45 segundos tu página en vivo registrará tanto el correo como el stack principal (`n8n`, `Make`, `Zapier`, etc.) de cada visitante.
